@@ -12,7 +12,17 @@ editor: visual
 
 \pagebreak
 
-## Research Topic 2 - Crime
+## Research Topic 2 - The Economy
+
+We think it'd be interesting to investigate some kind of economic data, especially given recent news and current events. There are many different directions we could take this topic, but possible ideas we discussed that are relevant today could be impacts of trade policies and tariffs, fluctuations in inflation and interest rates, or other governmental policies. This topic could be focused on macro level data, or we also thought it could be interesting to focus on different cities like Durham. Potential audiences include economic policy makers, people in government, and regular people to inform them. Here are some potential research questions:
+
+-   The effects of interest rates and inflation on consumer spending
+
+-   Something about how effective tariffs and other policies are reducing prices
+
+-   What factors predict housing prices in Durham?
+
+In terms of potential datasets, the National Beareau of Economic Research, the IMF, and other respected economic organizations have many useful datasets related to this topic.
 
 \pagebreak
 
