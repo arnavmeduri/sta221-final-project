@@ -8,12 +8,22 @@ execute:
 editor: visual
 ---
 
-## Research Topic 1
+## Research Topic 1 - Local Data
 
 \pagebreak
 
-## Research Topic 2
+## Research Topic 2 - Crime
 
 \pagebreak
 
-## Research Topic 3
+## Research Topic 3 - Environmental
+
+We want to investigate some type of environmental/climate data. Specifically, we think that investigating natural disasters like wildfires, floods, sea level rise, etc. could be interesting project topics. We are interested in these topics because they are extremely relevant (recent California wildfires, hurricane Helene, etc.), and they are only poised to get worse as time goes on with climate change effects. Additionally, we think that we could find good data around these events. Here are three potential research questions:
+
+-   Can factors like wind speed and rainfall totals predict economic damage caused by hurricanes?
+
+-   How do factors like humidity level, wind speed, and temperature, and urban environment influence the area burned in a wildfire?
+
+-   What is the relationship between wildfire incidence and respiratory illness?
+
+To find data to answer these questions, we think that government and environmental organizations will be good places to start our search.
