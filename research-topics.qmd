@@ -14,26 +14,38 @@ editor: visual
 
 ## Research Topic 2 - The Economy
 
-We think it'd be interesting to investigate some kind of economic data, especially given recent news and current events. There are many different directions we could take this topic, but possible ideas we discussed that are relevant today could be impacts of trade policies and tariffs, fluctuations in inflation and interest rates, or other governmental policies. This topic could be focused on macro level data, or we also thought it could be interesting to focus on different cities like Durham. Potential audiences include economic policy makers, people in government, and regular people to inform them. Here are some potential research questions:
+We think it would be interesting to investigate some kind of economic data, especially given recent news and current events. There are many different directions we could take this topic, but possible ideas we discussed that are relevant today could be impacts of trade policies and tariffs, fluctuations in inflation and interest rates, or other governmental policies. This topic could be focused on macro-level data, or we also thought it could be interesting to focus on different cities like Durham. Potential audiences include economic policy makers, people in government, and regular people to inform them. Here are some potential research questions:
 
--   The effects of interest rates and inflation on consumer spending
+-   How do interest rates and inflation impact consumer spending?
 
--   Something about how effective tariffs and other policies are reducing prices
+    For this project, an appropriate dataset would include historical records of consumer spending, inflation rates, and interest rates over time and ideally contain monthly or quarterly data on economic indicators such as the Consumer Price Index, the Federal Funds Rate, and household consumption expenditures. Good places to start our search would be the the Federal Reserve Economic Data, the Bureau of Economic Analysis, and the U.S. Census Bureau.
+
+-   How effective are tariffs and other trade policies in reducing prices of goods?
+
+    A good dataset would include historical data on tariffs, import/export prices, and consumer prices for affected goods and contain information/variables on the tariff rate for specific goods, wholesale and retail prices before and after tariff implementation, and overall price index changes. We could look at data from the U.S. International Trade Commission, the Bureau of Labor Statistics, and maybe the World Trade Organization.
 
 -   What factors predict housing prices in Durham?
+
+    Datasets housing sale prices alongside predictors such as property size, location, number of bedrooms and bathrooms, crime rates, school district quality, and economic indicators like median income and mortgage rates would be a good fit for this project. Some good sources to look into: Zillow’s housing market data, county tax assessor records, and the U.S. Census Bureau.
 
 In terms of potential datasets, the National Beareau of Economic Research, the IMF, and other respected economic organizations have many useful datasets related to this topic.
 
 \pagebreak
 
-## Research Topic 3 - Environmental
+## Research Topic 3 - Environmental Science
 
-We want to investigate some type of environmental/climate data. Specifically, we think that investigating natural disasters like wildfires, floods, sea level rise, etc. could be interesting project topics. We are interested in these topics because they are extremely relevant (recent California wildfires, hurricane Helene, etc.), and they are only poised to get worse as time goes on with climate change effects. Additionally, we think that we could find good data around these events. Here are three potential research questions:
+We want to investigate some type of environmental/climate data. Specifically, we think that investigating natural disasters like wildfires, floods, sea level rise, etc. could be interesting project topics. We are interested in these topics because they are extremely relevant from an environmental policy and public safety perspective (recent California wildfires, Hurricane Helene, etc.), and they are only poised to get worse as time goes on with climate change effects. Additionally, we think that we could find good data around these events. Here are three potential research questions:
 
 -   Can factors like wind speed and rainfall totals predict economic damage caused by hurricanes?
 
+    An appropriate dataset for this project would include historical hurricane records with details on wind speed, rainfall totals, and economic damage estimates. This data could come from sources like the National Hurricane Center, the National Oceanic and Atmospheric Administration, or Federal Emergency Management Agency, which track hurricanes and their financial impact on infrastructure.
+
 -   How do factors like humidity level, wind speed, and temperature, and urban environment influence the area burned in a wildfire?
 
--   What is the relationship between wildfire incidence and respiratory illness?
+    A good dataset for this project would include wildfire records with corresponding meteorological/geographic data, which could be obtained from agencies such as the U.S. Forest Service, the National Interagency Fire Center, or NASA’s Fire Information for Resource Management System.
 
-To find data to answer these questions, we think that government and environmental organizations will be good places to start our search.
+-   Can changes in annual precipitation levels predict the severity of droughts in different regions?
+
+    To answer this question, we could use historical precipitation records from NOAA alongside drought severity metrics (such as the U.S. Drought Monitor), which would allow us to collect important data on precipitation amounts and drought intensity ratings to model predictive relationships.
+
+To find data to answer these questions, we think that the government and environmental organizations mentioned will be good places to start our search.
