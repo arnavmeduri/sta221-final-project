@@ -8,7 +8,31 @@ execute:
 editor: visual
 ---
 
-## Research Topic 1 - Local Data
+## Research Topic 1 - **Impact of AI on Job Markets and Workforce Dynamics**
+
+With the rise of AI, this topic explores how artificial intelligence and automation are affecting different industries, altering job roles, and influencing workforce skills. The research will investigate how AI is actually impacting jobs, whether that means replacing jobs, creating new opportunities, changing how they look, or a combination of all three.
+
+Motivation: AI is becoming increasingly powerful and its impacts on the job market are constantly in quesiton. Understanding these trends is crucial for policymakers, businesses, and workers preparing for the future.
+
+Potential Audience:
+
+• Policymakers and labor economists
+
+• Businesses and their leaders
+
+• Workers and students
+
+Potential Research Questions:
+
+1\. How has the adoption of AI affected employment rates and how does this look in different industries?
+
+2\. What types of jobs are most susceptible to automation? Which jobs are going to be augmented the most?
+
+3\. How does AI-driven automation impact economic inequality and different tiers of wage levels?
+
+Potential Data Sources:
+
+Data can come from the following sources: employment and automation data from the Bureau of Labor Statistics (BLS), reports from consulting firms on AI workforce trends, and job posting data from LinkedIn or Indeed to analyze demand shifts.
 
 \pagebreak
 
