@@ -8,13 +8,13 @@ execute:
 editor: visual
 ---
 
-## Research Topic 1 - **Impact of AI on Job Markets and Workforce Dynamics**
+## Research Topic 1 - **Impact of AI on Job Markets**
 
-With the rise of AI, this topic explores how artificial intelligence and automation are affecting different industries, altering job roles, and influencing workforce skills. The research will investigate how AI is actually impacting jobs, whether that means replacing jobs, creating new opportunities, changing how they look, or a combination of all three.
+With the rise of AI, this topic explores how artificial intelligence and automation are impacting different industries, altering job roles, and influencing workforce skills. The research will investigate the nature of this impact, whether that means replacing jobs, creating new opportunities, changing how they operate, or a combination of all three.
 
-Motivation: AI is becoming increasingly powerful and its impacts on the job market are constantly in quesiton. Understanding these trends is crucial for policymakers, businesses, and workers preparing for the future.
+Motivation: AI is becoming increasingly powerful and its impacts on the job market are constantly in question. Understanding these trends is crucial for policymakers, businesses, and workers to prepare for the future.
 
-Potential Audience:
+Potential Audiences:
 
 • Policymakers and labor economists
 
@@ -26,9 +26,15 @@ Potential Research Questions:
 
 1\. How has the adoption of AI affected employment rates and how does this look in different industries?
 
+To answer this question, we would need a dataset that includes historical employment data across industries and another dataset that records AI adoption trends and automation levels. Ideally, this would also record in the same country/state so the impacts could be more measureable. We could compare employment trends in AI-intensive industries versus industries with lower AI integration or AI adoption in different countries.
+
 2\. What types of jobs are most susceptible to automation? Which jobs are going to be augmented the most?
 
+A dataset measuring different types of skills needed in different jobs or industries is also necessary. Understanding or grouping these jobs would us better understand the impact has on the types of jobs AI will change. Ideally, it would also track job transitions and salary impacts in AI-affected fields. We can also see whether or not these jobs require more training or a different skill set as AI has an impact.
+
 3\. How does AI-driven automation impact economic inequality and different tiers of wage levels?
+
+For this question, we need datasets tracking wages and income distribution over time again in specific industires. The dataset should include data on wage growth by sector, employment shifts, and changes in income inequality indices before and after AI adoption.
 
 Potential Data Sources:
 
