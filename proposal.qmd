@@ -18,7 +18,7 @@ library(tidymodels)
 ```{r}
 #| label: load-data
 
-wildfires <- read_csv("data/FW_Veg_Rem_Combined.csv")
+wildfire <- read_csv("data/FW_Veg_Rem_Combined.csv")
 ```
 
 ## Introduction
