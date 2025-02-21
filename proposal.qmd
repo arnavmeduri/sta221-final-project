@@ -13,8 +13,12 @@ editor: visual
 library(tidyverse)
 library(tidymodels)
 # add other packages as needed
+```
 
-# add code to load data
+```{r}
+#| label: load-data
+
+wildfire <- read_csv("data/FW_Veg_Rem_Combined.csv")
 ```
 
 ## Introduction
