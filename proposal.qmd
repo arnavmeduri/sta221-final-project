@@ -23,9 +23,9 @@ wildfire <- read_csv("data/FW_Veg_Rem_Combined.csv")
 
 ## Introduction
 
-Wildfires are among the most destructive natural disasters, causing significant environmental, economic, and human losses. Just this past year, California has experienced some of the most severe and costly wildfires in history, with fires destroying millions of acres, displacing thousands of residents, and costing billions in damages. The increasing frequency and intensity of these fires highlight the urgent need for improved wildfire response strategies. As climate change exacerbates drought conditions and fuel availability, accurately predicting fire containment time is becoming more critical for firefighting agencies and policymakers.
+Wildfires are among the most destructive natural disasters, causing significant environmental, economic, and human losses. Just this past year, California has experienced some of the most severe and costly wildfires in history, with fires destroying millions of acres, displacing thousands of residents, and costing billions in damages. The increasing frequency and intensity of these fires demonstrates the urgent need for improved wildfire response strategies. As climate change exacerbates drought conditions and fuel availability, accurately predicting fire containment time is becoming more critical for firefighting agencies and policymakers.
 
-In this project, we seek to analyze wildfire characteristics, environmental conditions, and geographical factors to predict the time required to contain a fire. By leveraging historical wildfire data, weather patterns, and vegetation information, our goal is to identify key determinants of fire containment time and develop a predictive model to aid decision-making in fire management.
+In this project, we will analyze wildfire characteristics, environmental conditions, and geographical factors to predict the time required to contain a fire. By using historical wildfire data, weather patterns, and vegetation information, we hope to identify key determinants of fire containment time and develop a predictive model to aid decision-making in fire management.
 
 [Research Question:]{.underline}
 
@@ -35,13 +35,13 @@ What factors influence the time it takes to put out a wildfire, and can we devel
 
 Wildfire response teams must quickly assess fire severity and determine the best course of action to contain and extinguish fires efficiently. However, limited firefighting resources often require prioritization based on containment difficulty. If containment time can be accurately predicted based on fire size, vegetation type, weather conditions, and remoteness, fire departments and policymakers can make more informed decisions about resource allocation and risk mitigation.
 
-The relevance of this research is especially critical given the recent events in California, where wildfires pose a current and recurring threat. By understanding the key factors that impact containment time, fire agencies can allocate resources more effectively, improve response times, and potentially reduce the destruction caused by wildfires.
+The relevance of this research is especially important given the recent wildfires California. By understanding the key factors that impact containment time, fire agencies can allocate resources more effectively, improve response times, and potentially reduce the destruction caused by wildfires.
 
 Beyond California, predicting containment time is valuable for national and global wildfire management, aiding in disaster preparedness, insurance risk assessment, and policy development. By identifying the most influential factors in fire containment, this research could provide actionable insights for optimizing firefighting efforts, mitigating economic losses, and enhancing wildfire prediction models.
 
 [Hypothesis]{.underline}
 
-We hypothesize the following relationships between key variables and wildfire containment tine:
+We hypothesize the following relationships between key variables and wildfire containment time:
 
 -   Larger fires will take longer to contain
 
@@ -50,8 +50,6 @@ We hypothesize the following relationships between key variables and wildfire co
 -   Vegetation type influences containment difficulty. Fires in densely forested areas may take longer to contain than those in grasslands or shrublands due to fuel availability.
 
 -   Remoteness increases containment time. Fires located farther from cities and firefighting infrastructure will have longer putout times due to delayed response efforts.
-
-Through this analysis, we aim to refine our understanding of wildfire containment and contribute to more effective fire management strategies
 
 ## Data description
 
