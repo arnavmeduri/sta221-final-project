@@ -116,9 +116,17 @@ wildfire_copy |>
 ```{r}
 
 wildfire_copy |> 
-  count(putout_time_num) |> 
-  arrange(desc(n)) |>
-  slice_head(n = 10)
+  count(putout_time_num)
+```
+
+```{r}
+
+ggplot(wildfire_copy, aes(x = putout_time_num)) +
+  geom_histogram() +
+  labs(title = "Distribution of Putout Time",
+       x = "Putout Time (Days)",
+       y = "Frequency") +
+  theme_minimal()
 ```
 
 ## Analysis approach
