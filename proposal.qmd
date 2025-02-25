@@ -147,7 +147,7 @@ wildfire_copy |>
   filter(putout_time_num <= 400) |> 
   ggplot(aes(x = putout_time_num)) +
     geom_histogram() +
-    labs(title = "Distribution of Fire Put out Times",
+    labs(title = "Distribution of Fire Putout Times",
          x = "Put out Time (Days)",
          y = "Frequency")
 ```
@@ -203,4 +203,4 @@ Based on the performance of each of our models, we will be able to draw conclusi
 
 ## Data dictionary
 
-The data dictionary can be found [here](https://github.com/varunr89/smokey/blob/master/Wildfire_att_description.txt).
+The data dictionary can be found [here](https://github.com/sta221-sp25/project-Info-Innovators/blob/main/data/README.md).
