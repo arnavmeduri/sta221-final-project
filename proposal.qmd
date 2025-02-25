@@ -75,7 +75,9 @@ The [dataset](https://github.com/varunr89/smokey/blob/master/FW_Veg_Rem_Combined
 
 The compiled dataset (which we will be using in our analysis) consists of 43 variables, including attributes such as fire name, size, class, cause, location (latitude/longitude, state), discovery month, containment time, and environmental conditions before and during the fire event. Weather-related variables include temperature, wind speed, humidity, and precipitation recorded at multiple time points (30, 15, and 7 days before containment, as well as on the day the fire was contained).
 
-## Exploratory data analysis
+## Data Processing
+
+All of our data is contained in the `wildfire` data set, so we will not need to join any data sets. We will need to handle missing data values, especially in our response variable column (`putout_time`) and columns that we intend to use as predictors. We will need to look at each column on a case by case basis to determine if we want to drop NA values or if we are able to interpolate values. One data processing technique we might use is to potentially convert `cont_date_final` and `disc_date_final` into DateTime variables. These two columns not only contain the date, but also a recorded time. Currently, `putout_time` is only measured in integer values of days, which leads to a generalization of putout time that especially impacts fires with shorter durations. By converting the aformentioned columns into DateTime variables, we could find the fire duration in terms of hours as opposed to whole days.
 
 <https://www.statology.org/r-extract-number-from-string/>
 
@@ -89,6 +91,34 @@ wildfire_copy <- wildfire_copy |>
   )
 
 is.numeric(wildfire_copy$putout_time_num)
+
+wildfire_copy <- wildfire_copy |> 
+  filter(!is.na(putout_time_num))
+
+wildfire_copy
+```
+
+```{r}
+
+wildfire_copy |> 
+  summarize(
+    mean = mean(putout_time_num),
+    median = median(putout_time_num),
+    min = min(putout_time_num),
+    max = max(putout_time_num),
+    sd = sd(putout_time_num),
+    Q1 = quantile(putout_time_num, 0.25),
+    Q3 = quantile(putout_time_num, 0.75),
+    IQR = IQR(putout_time_num)
+  )
+```
+
+```{r}
+
+wildfire_copy |> 
+  count(putout_time_num) |> 
+  arrange(desc(n)) |>
+  slice_head(n = 10)
 ```
 
 ## Analysis approach
