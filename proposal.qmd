@@ -23,7 +23,7 @@ wildfire <- read_csv("data/FW_Veg_Rem_Combined.csv")
 
 ## Introduction
 
-Wildfires are among the most destructive natural disasters,causing significant environmental, economic, and human losses. Just this past year, California has experienced some of the most severe and costly wildfires in history, with fires destroying millions of acres, displacing thousands of residents, and costing billions in damages. The increasing frequency and intensity of these fires demonstrates the urgent need for improved wildfire response strategies. As climate change exacerbates drought conditions and fuel availability, accurately predicting fire containment time is becoming more critical for firefighting agencies and policymakers.
+Wildfires are among the most destructive natural disasters, causing significant environmental, economic, and human losses. Just this past year, California has experienced some of the most [severe and costly wildfires in history](https://www.latimes.com/business/story/2025-01-24/estimated-cost-of-fire-damage-balloons-to-more-than-250-billion), with fires destroying millions of acres, displacing thousands of residents, and costing billions in damages. The increasing frequency and intensity of these fires demonstrates the urgent need for improved wildfire response strategies. As climate change affects drought conditions and fuel availability, accurately predicting fire containment time is becoming more important for firefighting agencies and policymakers.
 
 In this project, we will analyze wildfire characteristics, environmental conditions, and geographical factors to predict the time required to contain a fire. By using historical wildfire data, weather patterns, and vegetation information, we hope to identify key determinants of fire containment time and develop a predictive model to aid decision-making in fire management.
 
@@ -73,7 +73,7 @@ The [dataset](https://github.com/varunr89/smokey/blob/master/FW_Veg_Rem_Combined
 
     Simplemaps compiles city location data from various authoritative sources, including government databases, geographic surveys, and other publicly available records. The dataset includes information such as city names, coordinates, population estimates, and administrative divisions.
 
-    The compiled dataset (which we will be using in our analysis) consists of 43 variables, including attributes such as fire name, size, class, cause, location (latitude/longitude, state), discovery month, containment time, and environmental conditions before and during the fire event. Weather-related variables include temperature, wind speed, humidity, and precipitation recorded at multiple time points (30, 15, and 7 days before containment, as well as on the day the fire was contained).
+The compiled dataset (which we will be using in our analysis) consists of 43 variables, including attributes such as fire name, size, class, cause, location (latitude/longitude, state), discovery month, containment time, and environmental conditions before and during the fire event. Weather-related variables include temperature, wind speed, humidity, and precipitation recorded at multiple time points (30, 15, and 7 days before containment, as well as on the day the fire was contained).
 
 ## Exploratory data analysis
 
