@@ -1,6 +1,6 @@
 ---
 title: "Project Proposal"
-author: "Ben, Kevin, Arnav, Ricardo"
+author: "Info Innovators - Kevin Mao, Arnav Meduri, Ben Trokenheim, Ricardo Urena"
 format: pdf
 execute: 
   warning: false
@@ -33,11 +33,11 @@ What factors influence the time it takes to put out a wildfire, and can we devel
 
 [Motivation & Importance]{.underline}
 
-Wildfire response teams must quickly assess fire severity and determine the best course of action to contain and extinguish fires efficiently. However, limited firefighting resources often require prioritization based on containment difficulty. If containment time can be accurately predicted based on fire size, vegetation type, weather conditions, and remoteness, fire departments and policymakers can make more informed decisions about resource allocation and risk mitigation.
+Wildfire response teams must quickly assess fire severity and determine the best course of action to contain and extinguish fires efficiently. However, limited firefighting resources often require prioritization based on containment difficulty. If containment time can be accurately predicted based on fire size, vegetation type, weather conditions, and remoteness, fire departments and policymakers can make more informed decisions about resource allocation/risk mitigation.
 
-The relevance of this research is especially important given the recent wildfires California. By understanding the key factors that impact containment time, fire agencies can allocate resources more effectively, improve response times, and potentially reduce the destruction caused by wildfires.
+The relevance of this research is especially important given the recent wildfires California. By understanding the key factors that impact containment time, fire agencies can allocate resources more effectively and reduce response times, which could potentially reduce the destruction caused by wildfires.
 
-Beyond California, predicting containment time is valuable for national and global wildfire management, aiding in disaster preparedness, insurance risk assessment, and policy development. By identifying the most influential factors in fire containment, this research could provide actionable insights for optimizing firefighting efforts, mitigating economic losses, and enhancing wildfire prediction models.
+Beyond California, predicting containment time is useful for national and global wildfire management and could help with disaster preparedness and and policy development efforts. By identifying the most influential factors in fire containment, we hope to provide insights to improve containment planning.
 
 [Hypothesis]{.underline}
 
@@ -47,7 +47,7 @@ We hypothesize the following relationships between key variables and wildfire co
 
 -   Weather conditions significantly impact containment time. Higher temperatures, stronger winds, and lower humidity levels will be associated with longer containment times, while increased precipitation will reduce containment time
 
--   Vegetation type influences containment difficulty. Fires in densely forested areas may take longer to contain than those in grasslands or shrublands due to fuel availability.
+-   Vegetation type influences containment difficulty. Fires in densely forested areas may take longer to contain than those in grasslands or shrublands (due to fuel availability).
 
 -   Remoteness increases containment time. Fires located farther from cities and firefighting infrastructure will have longer putout times due to delayed response efforts.
 
@@ -60,8 +60,6 @@ We hypothesize the following relationships between key variables and wildfire co
 ...
 
 ## Analysis approach
-
-...
 
 ## Data dictionary
 
