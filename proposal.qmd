@@ -93,7 +93,19 @@ We hypothesize the following relationships between key variables and wildfire co
 
 ## Exploratory data analysis
 
-...
+<https://www.statology.org/r-extract-number-from-string/>
+
+```{r}
+
+wildfire_copy <- wildfire
+
+wildfire_copy <- wildfire_copy |> 
+  mutate(
+    putout_time_num = parse_number(putout_time)
+  )
+
+is.numeric(wildfire_copy$putout_time_num)
+```
 
 ## Analysis approach
 
