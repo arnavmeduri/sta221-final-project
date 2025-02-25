@@ -12,6 +12,7 @@ editor: visual
 #| label: load-pkg-data
 library(tidyverse)
 library(tidymodels)
+library(knitr)
 # add other packages as needed
 ```
 
@@ -77,13 +78,18 @@ The compiled dataset (which we will be using in our analysis) consists of 43 var
 
 ## Data Processing
 
-All of our data is contained in the `wildfire` data set, so we will not need to join any data sets. We will need to handle missing data values, especially in our response variable column (`putout_time`) and columns that we intend to use as predictors. We will need to look at each column on a case by case basis to determine if we want to drop NA values or if we are able to interpolate values. One data processing technique we might use is to potentially convert `cont_date_final` and `disc_date_final` into DateTime variables. These two columns not only contain the date, but also a recorded time. Currently, `putout_time` is only measured in integer values of days, which leads to a generalization of putout time that especially impacts fires with shorter durations. By converting the aformentioned columns into DateTime variables, we could find the fire duration in terms of hours as opposed to whole days.
+All of our data is contained in the `wildfire` data set, so we will not need to join any data sets. We will need to handle missing data values, especially in our response variable column (`putout_time`) and columns that we intend to use as predictors. We will need to look at each column on a case by case basis to determine if we want to drop NA values or if we are able to interpolate values. Finally, there are some potential outliers in the data set, which we will need to investigate further.
 
-<https://www.statology.org/r-extract-number-from-string/>
+One data processing technique we might use is to potentially convert `cont_date_final` and `disc_date_final` into DateTime variables. These two columns not only contain the date, but also a recorded time. Currently, `putout_time` is only measured in integer values of days, which leads to a generalization of putout time that especially impacts fires with shorter durations. By converting the aformentioned columns into DateTime variables, we could find the fire duration in terms of hours as opposed to whole days.
+
+Before investigating our response variable, we need to do some data processing and cleaning. To begin, we drop NA values from the `putout_time` column. Next, we need to extract the number of days it took to put out the fire, and we need to convert this value to a numeric. The website where we found the code to do this is: <https://www.statology.org/r-extract-number-from-string/>. We also include a check to ensure that we properly converted the values to the numeric type.
 
 ```{r}
 
 wildfire_copy <- wildfire
+
+wildfire_copy <- wildfire_copy |> 
+  filter(!is.na(putout_time))
 
 wildfire_copy <- wildfire_copy |> 
   mutate(
@@ -91,11 +97,6 @@ wildfire_copy <- wildfire_copy |>
   )
 
 is.numeric(wildfire_copy$putout_time_num)
-
-wildfire_copy <- wildfire_copy |> 
-  filter(!is.na(putout_time_num))
-
-wildfire_copy
 ```
 
 ```{r}
@@ -110,24 +111,62 @@ wildfire_copy |>
     Q1 = quantile(putout_time_num, 0.25),
     Q3 = quantile(putout_time_num, 0.75),
     IQR = IQR(putout_time_num)
-  )
+  ) |> 
+  kable()
+
 ```
 
 ```{r}
 
 wildfire_copy |> 
-  count(putout_time_num)
+  count(putout_time_num) |> 
+  arrange(desc(n)) |>
+  slice_head(n = 10)
 ```
+
+This output shows the fire put out durations (in number of days) with the highest frequency. This shows that the majority of our data is clustered in low fire put out times, which we will also show using visualizations.
+
+```{r}
+(18680)/nrow(wildfire_copy)
+```
+
+Fire put out times of 0 days account for more than half of the data in our data set. This also suggests that using DateTime variables to get more specific put out times in terms of hours might be beneficial.
 
 ```{r}
 
-ggplot(wildfire_copy, aes(x = putout_time_num)) +
-  geom_histogram() +
-  labs(title = "Distribution of Putout Time",
-       x = "Putout Time (Days)",
-       y = "Frequency") +
-  theme_minimal()
+wildfire_copy |> 
+  arrange(desc(putout_time_num)) |> 
+  select(putout_time_num)
 ```
+
+Looking at the output, the longest fire put out time of 3287 days is far longer than the second longest fire put out time of 371 days. For readability of the histogram, we will exclude the data point with a putout time of 3287 days, as it will stretch the horizontal axis too much.
+
+```{r}
+
+wildfire_copy |> 
+  filter(putout_time_num <= 400) |> 
+  ggplot(aes(x = putout_time_num)) +
+    geom_histogram() +
+    labs(title = "Distribution of Fire Put out Times",
+         x = "Put out Time (Days)",
+         y = "Frequency")
+```
+
+Because the frequency of fire putout times of 0 days and 1 day is so high, it makes it hard to read the histogram. Thus, we can re-scale the frequencies on the log scale. The website where we found the information to do this is: <https://www.r-bloggers.com/2021/08/beginning-a-ggplot2-series-logarithmize-your-scales/>.
+
+```{r}
+
+wildfire_copy |> 
+  filter(putout_time_num <= 400) |> 
+  ggplot(aes(x = putout_time_num)) +
+    geom_histogram() +
+    scale_y_log10() +
+    labs(title = "Distribution of Fire Put out Time",
+         x = "Put out Time (Days)",
+         y = "Frequency")
+```
+
+The distribution of fire put out times is unimodal and highly right skewed, with most of the values being low. This is shown by the visualizations and the fact that the mean (6.03 days) is far higher than the median (0 days). It has an IQR of 1 day, with the 25th percentile at 0 days and the 75th percentile at 1 day. The maximum value put out time of 3287 days and put out times greater than or equal to 250 days appear to be potential outliers. ADD DISCUSSION OF STANDARD DEVIATION?
 
 ## Analysis approach
 
