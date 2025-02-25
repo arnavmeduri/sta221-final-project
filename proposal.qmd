@@ -61,6 +61,37 @@ We hypothesize the following relationships between key variables and wildfire co
 
 ## Analysis approach
 
+Since the goal of our project is to understand how different fire characteristics and weather, geographic, and location-based factors influence fire containment time, `putout_time` will be the response variable in our analysis. So far, we have identified the following variables as candidate predictors that may help explain the variability in `putout_time`:
+
+[Numerical variables:]{.underline}
+
+-   Fire Size **(**`fire_size`**):** The total area burned by the fire (acres). We think this would be a strong predictor because larger fires generally take more time to contain (Fires with a greater burned area require more resources and extended efforts from firefighting teams.)
+
+-   Fire Intensity **(**`fire_mag`**):** A scaled measure of fire intensity based on fire size. We think this would be a strong predictor because more intense fires may be harder to control, and higher fire intensity might be correlated with faster fire spread and greater difficulty in containment efforts.
+
+-   Temperature on Containment Day (`Temp_cont`): The temperature in degrees Celsius at the fire location on the day the fire was contained. We think this would be a strong predictor because higher temperatures can dry out vegetation and increase fire spread, making containment more difficult. Lower temperatures might help slow fire progression.
+
+-   Wind Speed on Containment Day **(**`Wind_cont`**):** The wind speed in meters per second at the fire location on the day the fire was contained. We think this would be a strong predictor because stronger winds can spread fires rapidly and therefore make containment more challenging. Fires in areas with low wind speeds may be easier to manage.
+
+-   Precipitation 7 Days Before Fire Containment **(**`Prec_pre_7`**):** The amount of precipitation in millimeters at the fire location in the seven days leading up to containment. We think this would be a strong predictor because recent precipitation can increase soil and vegetation moisture, whic could reducing fire intensity and help with containment efforts.
+
+[Categorical variables:]{.underline}
+
+-   Cause of Fire (`stat_cause_descr)`: The reported cause of the fire (e.g., lightning, human activity, or equipment use). We think this would be a strong predictor because fires caused by natural events like lightning might have different containment challenges compared to those caused by human activities (i.e., some causes may be associated with fires that spread more aggressively).
+
+-   Dominant Vegetation Type (`Vegetation`): The main form of vegetation present in the fire-affected area (categorized into forest, shrubland, grassland, or urban land). We think this would be a strong predictor because different vegetation types burn at different rates; for example, denser forests/vegetation may sustain fires for longer periods of time, while grasslands might allow for quicker containment.
+
+-   Remoteness (`remoteness`): A non-dimensional measure of the distance to the closest city.\
+    We think this would be a strong predictor because fires in remote areas may take longer to contain becuse of limited access to firefighting resources and difficulty in transporting equipment (delayed response times).
+
+To understand the relationship between each of our candidate predictors and fire containment time, we will first conduct EDA. For numerical predictors, we will use correlation coefficients to assess their strength of association with fire containment time. For categorical predictors, we will analyze differences in fire containment time across categories by fitting a linear regression model with categorical variables as predictors and examining the estimated coefficients, and also rely on visualizations to determine whether there are significant differences in fire containment time across different levels of categorical variables (e.g., side-by-side boxplots to compare the distribution of fire containment time across different categories).
+
+Based on the strongest predictors identified in our exploratory analysis, we will fit multiple linear regression models to predict fire containment time using a combination of the selected variables. Multiple linear regression is the most appropriate modeling approach for this project because our response variable (fire containment time) is a continuous, numerical variable; since we are not predicting a categorical outcome, logistic regression would not be applicable. As part of our modeling methodology, we will fit both main effects models and interaction effects models (Interactions will be included based on factors that may have a different relationship with fire containment time depending on another category based on EDA – for example, fire size may have a different effect on fire containment time depending on vegetation type).
+
+We will fit models with 95% confidence intervals for coefficients to estimate the range in which the true slope of the relationship between each predictor and fire containment time is likely to fall. After fitting our models, we will use model assessment metrics to determine which models provide the best fit. We will evaluate models based on adjusted R² (which accounts for the number of predictors and helps identify models that explain the most variability in fire containment time), RMSE (which represents the average difference between observed and predicted values of the response variable), or Standard Error, which will help us understand the predictive performance of each model. Another technique that might be useful (which we covered in class) is standardizing numerical variables in our model so we can compare each of the numerical variables and determine which are the most "impactful" predictors of fire containment time.
+
+Based on the performance of each of our models, we will be able to draw conclusions about which factors most strongly influence fire containment time and how different environmental and fire-related conditions contribute to variability in putout time.
+
 ## Data dictionary
 
 The data dictionary can be found [here](ADD%20LINK!!!) \[Update the link and remove this note!\]
