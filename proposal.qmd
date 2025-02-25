@@ -69,31 +69,43 @@ We hypothesize the following relationships between key variables and wildfire co
 
     1.  Short, Karen C. (2017) - Spatial Wildfire Occurrence Data (1992-2015) When: 1992-2015\
         How: The dataset compiles wildfire occurrence records across the United States using multiple sources, including federal, state, and local fire reporting systems. It integrates data from the Fire Program Analysis (FPA) Fire-Occurrence Database (FOD), which consolidates information from agencies such as the U.S. Forest Service, Bureau of Land Management, and National Park Service.
-    2.  NOAA National Centers for Environmental Information (2001) - Integrated Surface Hourly (1992-2015) \
+    2.  NOAA National Centers for Environmental Information (2001) - Integrated Surface Hourly (1992-2015)\
         When: 1992-2015\
         How: NOAA gathers Integrated Surface Hourly data from thousands of global weather stations, including those managed by the National Weather Service, the Federal Aviation Administration, and international meteorological organizations. The data include hourly observations of temperature, wind speed, humidity, and other meteorological variables, primarily collected through automated and manual weather stations.
-    3.  Meiyappan & Jain (2012) - Global Land-Cover Change & Land-Use Conversions \
+    3.  Meiyappan & Jain (2012) - Global Land-Cover Change & Land-Use Conversions\
         When: Datasets in the paper span from 1765 to 2010.\
-        How: They used these three studies: \
-        1. HYDE 3.1 (Historical Database of the Global Environment): Developed by Klein Goldewijk et al. (2011), this dataset provides historical estimates of cropland and pastureland areas. \
-        2. RF Data: Updated estimates based on Ramankutty and Foley (1999), offering alternative historical reconstructions of agricultural land use. \
-        3. HH Data: Regional estimates from Houghton (2008), focusing on historical land-use changes.
-    4.  World Cities Database - Simplemaps \
-        When: Dataset updated Regularly and there is no given timeframe. \
+        How: They used these three studies:\
+        1.  HYDE 3.1 (Historical Database of the Global Environment): Developed by Klein Goldewijk et al. (2011), this dataset provides historical estimates of cropland and pastureland areas.\
+        2.  RF Data: Updated estimates based on Ramankutty and Foley (1999), offering alternative historical reconstructions of agricultural land use.\
+        3.  HH Data: Regional estimates from Houghton (2008), focusing on historical land-use changes.
+    4.  World Cities Database - Simplemaps\
+        When: Dataset updated Regularly and there is no given timeframe.\
         How: Simplemaps compiles city location data from various authoritative sources, including government databases, geographic surveys, and other publicly available records. The dataset includes information such as city names, coordinates, population estimates, and administrative divisions.
 
 -   A description of the observations and general characteristics being measured
 
-    -   The “U.S. Wildfire Data (Plus Other Attributes)” dataset on Kaggle is a curated subset of a larger collection encompassing 1.88 million U.S. wildfire records. \
+    -   The “U.S. Wildfire Data (Plus Other Attributes)” dataset on Kaggle is a curated subset of a larger collection encompassing 1.88 million U.S. wildfire records.\
         \
-        Observations and General Characteristics Measured: \
-        • Fire Occurrence Details: Each entry includes information about individual wildfire events, such as the date and location of occurrence. \
-        • Geographic Attributes: Data points are associated with specific geographic coordinates, allowing for spatial analysis of wildfire distribution across the United States. \
+        Observations and General Characteristics Measured:\
+        • Fire Occurrence Details: Each entry includes information about individual wildfire events, such as the date and location of occurrence.\
+        • Geographic Attributes: Data points are associated with specific geographic coordinates, allowing for spatial analysis of wildfire distribution across the United States.\
         • Scientific Measurments: The dataset integrates supplementary scientific measurment data related to each wildfire event, such as temperature, wind speed, and humidity.
 
 ## Exploratory data analysis
 
-...
+<https://www.statology.org/r-extract-number-from-string/>
+
+```{r}
+
+wildfire_copy <- wildfire
+
+wildfire_copy <- wildfire_copy |> 
+  mutate(
+    putout_time_num = parse_number(putout_time)
+  )
+
+is.numeric(wildfire_copy$putout_time_num)
+```
 
 ## Analysis approach
 
