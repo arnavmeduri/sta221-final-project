@@ -23,7 +23,7 @@ wildfire <- read_csv("data/FW_Veg_Rem_Combined.csv")
 
 ## Introduction
 
-Wildfires are among the most destructive natural disasters, causing significant environmental, economic, and human losses. Just this past year, California has experienced some of the most severe and costly wildfires in history, with fires destroying millions of acres, displacing thousands of residents, and costing billions in damages. The increasing frequency and intensity of these fires demonstrates the urgent need for improved wildfire response strategies. As climate change exacerbates drought conditions and fuel availability, accurately predicting fire containment time is becoming more critical for firefighting agencies and policymakers.
+Wildfires are among the most destructive natural disasters,causing significant environmental, economic, and human losses. Just this past year, California has experienced some of the most severe and costly wildfires in history, with fires destroying millions of acres, displacing thousands of residents, and costing billions in damages. The increasing frequency and intensity of these fires demonstrates the urgent need for improved wildfire response strategies. As climate change exacerbates drought conditions and fuel availability, accurately predicting fire containment time is becoming more critical for firefighting agencies and policymakers.
 
 In this project, we will analyze wildfire characteristics, environmental conditions, and geographical factors to predict the time required to contain a fire. By using historical wildfire data, weather patterns, and vegetation information, we hope to identify key determinants of fire containment time and develop a predictive model to aid decision-making in fire management.
 
@@ -142,4 +142,4 @@ Based on the performance of each of our models, we will be able to draw conclusi
 
 ## Data dictionary
 
-The data dictionary can be found [here](ADD%20LINK!!!) \[Update the link and remove this note!\]
+The data dictionary can be found [here](https://github.com/varunr89/smokey/blob/master/Wildfire_att_description.txt).
