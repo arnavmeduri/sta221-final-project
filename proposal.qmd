@@ -112,7 +112,7 @@ wildfire_copy |>
     Q3 = quantile(putout_time_num, 0.75),
     IQR = IQR(putout_time_num)
   ) |> 
-  kable()
+  kable(digits = 3)
 
 ```
 
@@ -166,7 +166,7 @@ wildfire_copy |>
          y = "Frequency")
 ```
 
-The distribution of fire put out times is unimodal and highly right skewed, with most of the values being low. This is shown by the visualizations and the fact that the mean (6.03 days) is far higher than the median (0 days). It has an IQR of 1 day, with the 25th percentile at 0 days and the 75th percentile at 1 day. The maximum value put out time of 3287 days and put out times greater than or equal to 250 days appear to be potential outliers. ADD DISCUSSION OF STANDARD DEVIATION?
+The distribution of fire put out times is unimodal and highly right skewed, with most of the values being low. This is shown by the visualizations and the fact that the mean (6.03 days) is far higher than the median (0 days). It has an IQR of 1 day, with the 25th percentile at 0 days and the 75th percentile at 1 day. The maximum value put out time of 3287 days and put out times greater than or equal to 250 days appear to be potential outliers.
 
 ## Analysis approach
 
