@@ -13,6 +13,21 @@ editor: visual
 ```{r}
 #| label: load packages and data
 
+library(tidyverse)
+library(tidymodels)
+library(knitr)
+library(GGally)
+
+wildfire <- read_csv("data/FW_Veg_Rem_Combined.csv")
+glimpse(wildfire)
+```
+
+```{r}
+#| label: pairwise-plot-matrix
+
+wildfire |>
+  select(fire_mag, Temp_cont, Wind_cont, Prec_cont, stat_cause_descr) |>
+  ggpairs()
 ```
 
 Your written report goes here!
