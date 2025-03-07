@@ -191,7 +191,7 @@ Since the goal of our project is to understand how different fire characteristic
 -   Dominant Vegetation Type (`Vegetation`): The main form of vegetation present in the fire-affected area (categorized into forest, shrubland, grassland, or urban land). We think this would be a strong predictor because different vegetation types burn at different rates; for example, denser forests/vegetation may sustain fires for longer periods of time, while grasslands might allow for quicker containment.
 
 -   Remoteness (`remoteness`): A non-dimensional measure of the distance to the closest city.\
-    We think this would be a strong predictor because fires in remote areas may take longer to contain becuse of limited access to firefighting resources and difficulty in transporting equipment (delayed response times).
+    We think this would be a strong predictor because fires in remote areas may take longer to contain because of limited access to firefighting resources and difficulty in transporting equipment (delayed response times).
 
 To understand the relationship between each of our candidate predictors and fire containment time, we will first conduct EDA. For numerical predictors, we will use correlation coefficients to assess their strength of association with fire containment time. For categorical predictors, we will mainly rely on visualizations to determine whether there are significant differences in fire containment time across different levels of categorical variables (e.g., side-by-side boxplots to compare the distribution of fire containment time across different categories).
 
