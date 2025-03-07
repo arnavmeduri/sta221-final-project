@@ -182,7 +182,7 @@ Since the goal of our project is to understand how different fire characteristic
 
 -   Wind Speed on Containment Day **(**`Wind_cont`**):** The wind speed in meters per second at the fire location on the day the fire was contained. We think this would be a strong predictor because stronger winds can spread fires rapidly and therefore make containment more challenging. Fires in areas with low wind speeds may be easier to manage.
 
--   Precipitation 7 Days Before Fire Containment **(**`Prec_pre_7`**):** The amount of precipitation in millimeters at the fire location in the seven days leading up to containment. We think this would be a strong predictor because recent precipitation can increase soil and vegetation moisture, whic could reducing fire intensity and help with containment efforts.
+-   Precipitation 7 Days Before Fire Containment **(**`Prec_pre_7`**):** The amount of precipitation in millimeters at the fire location in the seven days leading up to containment. We think this would be a strong predictor because recent precipitation can increase soil and vegetation moisture, which could reducing fire intensity and help with containment efforts.
 
 [Categorical variables:]{.underline}
 
