@@ -1,6 +1,6 @@
 ---
 title: "Your project title"
-author: "Team Name: Team member 1, Team member 2, Team member 3, Team member 4"
+author: "Info Innovators - Kevin Mao, Arnav Meduri, Ben Trokenheim, Ricardo Urena"
 date: "Update date"
 format: pdf
 execute: 
@@ -11,11 +11,13 @@ editor: visual
 ---
 
 ```{r}
-#| label: load packages and data
+#| label: load-packages-and-data
 
 library(tidyverse)
 library(tidymodels)
 library(knitr)
+library(lubridate)
+library(stringr)
 library(GGally)
 
 wildfire <- read_csv("data/FW_Veg_Rem_Combined.csv")
@@ -23,11 +25,58 @@ glimpse(wildfire)
 ```
 
 ```{r}
+#| label: clean-data
+
+wildfire <- wildfire |>
+  filter(fire_size > 0, 
+         fire_size >= quantile(fire_size, 0.25, na.rm = TRUE), 
+         fire_size <= quantile(fire_size, 0.75, na.rm = TRUE))
+```
+
+```{r}
+#| label: wildfire-size-distribution
+
+ggplot(wildfire, aes(x = fire_size)) +
+  geom_histogram(binwidth = 1) +  
+  labs(title = "Distribution of Wilfire Size",
+       x = "Wildfire Size (Acres)",
+       y = "Frequency") +
+  theme_minimal()
+```
+
+```{r}
+lm(fire_size ~ )
+```
+
+```{r}
 #| label: pairwise-plot-matrix
 
 wildfire |>
-  select(fire_mag, Temp_cont, Wind_cont, Prec_cont, stat_cause_descr) |>
+  select(Temp_cont, Wind_cont, Prec_pre_7, Hum_pre_7, Vegetation) |>
+  rename(
+    "Temperature" = Temp_cont,
+    "Wind Speed" = Wind_cont,
+    "Precipitation" = Prec_pre_7,
+    "Humidity" = Hum_pre_7,
+    "Vegetation Density" = Vegetation
+  ) |>
   ggpairs()
+```
+
+```{r}
+
+fire_size_fit <- lm(fire_size ~ Temp_cont + Wind_cont)
+```
+
+```{r}
+#| label: filter-data
+
+wildfire <- wildfire |>
+  filter(fire_size > 0, 
+         fire_size >= quantile(fire_size, 0.25, na.rm = TRUE), 
+         fire_size <= quantile(fire_size, 0.75, na.rm = TRUE))
+
+nrow(wildfire)
 ```
 
 Your written report goes here!
