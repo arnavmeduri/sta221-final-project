@@ -66,3 +66,141 @@ wildfire %>%
          x = "Fire Size",
          y = "Frequency")
 ```
+
+```{r}
+#Vegetation univariate EDA
+table(wildfire_clean_50$Vegetation)
+
+ggplot(wildfire_clean_50, aes(x = Vegetation)) +
+  geom_bar(fill = "lightgreen") +
+  coord_flip() +
+  labs(title = "Frequency of Vegetation Types", x = "Vegetation Type", y = "Count")
+
+veg_table <- table(wildfire_clean_50$Vegetation)
+veg_percent <- prop.table(veg_table) * 100
+veg_percent
+```
+
+The dataset includes 28 distinct vegetation types, each classified by a numerical code. Among these, a few vegetation types dominate the data. The most frequently occurring types are:
+
+-   Open Shrubland (code 12) with 3,763 observations (about 26% of the dataset)
+
+-   Secondary Tropical Evergreen Broadleaf Forest (code 16) with 3,653 observations (about 26%)
+
+-   Polar Desert/Rock/Ice (code 15) with 3,081 observations (about 22%)
+
+Less common vegetation types represented in the data include desert and temperate evergreen needleleaf forests.
+
+```{r}
+#Vegetation & Fire_Size bivariate EDA
+ggplot(wildfire_clean_50, aes(x = as.factor(Vegetation), y = fire_size)) +
+  geom_boxplot(fill = "lightblue") +
+  coord_flip() +  # flip axes for readability
+  labs(
+    title = "Fire Size by Vegetation Type",
+    x = "Vegetation Type",
+    y = "Fire Size (acres)"
+  ) +
+  theme_minimal()
+
+wildfire_clean_50 %>%
+  group_by(Vegetation) %>%
+  summarise(
+    count = n(),
+    mean_fire_size = mean(fire_size, na.rm = TRUE),
+    median_fire_size = median(fire_size, na.rm = TRUE)
+  ) %>%
+  arrange(desc(mean_fire_size))
+```
+
+We explored the relationship between vegetation type and fire size using a boxplot and summary statistics. The boxplot shows variation in fire size distributions across vegetation types. Notably, vegetation type 0 has the largest spread and the highest median fire size at 5.0 acres. This type also has the highest mean fire size at 11.02 acres, suggesting a tendency for larger fires in this vegetation category.
+
+Vegetation types 12 and 16 also exhibit relatively high median fire sizes (both around 5.0 acres) with mean fire sizes of 10.15 and 9.67 acres, respectively. Conversely, vegetation types 9 and 4 have lower median fire sizes (3.3 and 3.0 acres), along with the lowest mean fire sizes, 8.33 and 8.39 acres, respectively.
+
+Overall, there is noticeable variation in fire size depending on vegetation type. Some vegetation types appear to be more prone to larger fires, which could be due to factors like fuel availability or vegetation density.
+
+```{r}
+#latitude univariate EDA
+summary(wildfire_clean_50$latitude)
+ggplot(wildfire_clean_50, aes(x = latitude)) +
+  geom_histogram(bins = 30, fill = "steelblue", color = "black") +
+  labs(
+    title = "Distribution of Latitude for Wildfires",
+    x = "Latitude",
+    y = "Frequency"
+  ) +
+  theme_minimal()
+```
+
+The latitude of wildfires in the dataset ranges from 17.98° to 69.26°, with a median of 34.84° and a mean of 36.62°. The middle 50% of the data falls between 32.85° and 39.93°, suggesting that most wildfires occur in mid-latitude regions of the United States. This range corresponds to areas that commonly experience wildfires, such as parts of California and other western states.
+
+The distribution of latitudes appears to be centered around the mid-30s to upper-30s, which may reflect the concentration of fire-prone areas in those geographic zones.
+
+```{r}
+# bivariate EDA latitude & fire_size
+ggplot(wildfire_clean_50, aes(x = latitude, y = fire_size)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +  # optional regression line
+  labs(
+    title = "Fire Size vs. Latitude",
+    x = "Latitude",
+    y = "Fire Size (acres)"
+  ) +
+  theme_minimal()
+
+cor(wildfire_clean_50$latitude, wildfire_clean_50$fire_size, use = "complete.obs")
+
+```
+
+Not really any relationship between latitude and fire_size
+
+```{r}
+# univariate EDA for pre_cont_15
+summary(wildfire_clean_50$Prec_pre_15)
+ggplot(wildfire_clean_50, aes(x = Prec_pre_15)) +
+  geom_histogram(bins = 30, fill = "skyblue", color = "black") +
+  labs(
+    title = "Distribution of Precipitation (15 Days Prior)",
+    x = "Precipitation (mm)",
+    y = "Frequency"
+  ) +
+  theme_minimal()
+```
+
+Most values are 0 mm or -1 mm, likely indicating missing data. The median is 0 mm, while the mean is 14.63 mm, skewed by extreme outliers (up to 2,527 mm).
+
+The distribution is highly right-skewed, with most fires occurring after little to no precipitation, consistent with dry conditions increasing fire risk.
+
+```{r}
+# bivariate EDA for pre_cont_15 and fire_size
+ggplot(wildfire_clean_50, aes(x = Prec_pre_15, y = fire_size)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(
+    title = "Fire Size vs. Precipitation (15 Days Prior)",
+    x = "Precipitation (mm, 15 Days Prior)",
+    y = "Fire Size (acres)"
+  ) +
+  theme_minimal()
+
+wildfire_clean_50 <- wildfire_clean_50 %>%
+  mutate(precip_bin = case_when(
+    Prec_pre_15 <= 0 ~ "0 or less",
+    Prec_pre_15 > 0 & Prec_pre_15 <= 10 ~ "0-10mm",
+    Prec_pre_15 > 10 ~ "10mm+"
+  ))
+
+ggplot(wildfire_clean_50, aes(x = precip_bin, y = fire_size)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(
+    title = "Fire Size by Precipitation Bins",
+    x = "Precipitation (mm, 15 Days Prior)",
+    y = "Fire Size (acres)"
+  ) +
+  theme_minimal()
+
+```
+
+The scatterplot of `Prec_pre_15` and `fire_size` shows no strong relationship between prior precipitation and fire size. Most fires occurred with little to no precipitation, and there is substantial variability in fire size regardless of precipitation level. A few extreme precipitation values do not appear to have a significant effect on fire size.
+
+The boxplot comparing precipitation bins (0 or less, 0-10mm, 10mm+) reveals similar distributions of fire size across all groups, with no meaningful differences in medians or spread. This suggests that precipitation up to 15 days prior to a fire may have limited impact on the size of the fire in this dataset.
