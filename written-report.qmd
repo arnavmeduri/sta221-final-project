@@ -24,61 +24,6 @@ wildfire <- read_csv("data/FW_Veg_Rem_Combined.csv")
 glimpse(wildfire)
 ```
 
-```{r}
-#| label: clean-data
-
-wildfire <- wildfire |>
-  filter(fire_size > 0, 
-         fire_size >= quantile(fire_size, 0.25, na.rm = TRUE), 
-         fire_size <= quantile(fire_size, 0.75, na.rm = TRUE))
-```
-
-```{r}
-#| label: wildfire-size-distribution
-
-ggplot(wildfire, aes(x = fire_size)) +
-  geom_histogram(binwidth = 1) +  
-  labs(title = "Distribution of Wilfire Size",
-       x = "Wildfire Size (Acres)",
-       y = "Frequency") +
-  theme_minimal()
-```
-
-```{r}
-lm(fire_size ~ )
-```
-
-```{r}
-#| label: pairwise-plot-matrix
-
-wildfire |>
-  select(Temp_cont, Wind_cont, Prec_pre_7, Hum_pre_7, Vegetation) |>
-  rename(
-    "Temperature" = Temp_cont,
-    "Wind Speed" = Wind_cont,
-    "Precipitation" = Prec_pre_7,
-    "Humidity" = Hum_pre_7,
-    "Vegetation Density" = Vegetation
-  ) |>
-  ggpairs()
-```
-
-```{r}
-
-fire_size_fit <- lm(fire_size ~ Temp_cont + Wind_cont)
-```
-
-```{r}
-#| label: filter-data
-
-wildfire <- wildfire |>
-  filter(fire_size > 0, 
-         fire_size >= quantile(fire_size, 0.25, na.rm = TRUE), 
-         fire_size <= quantile(fire_size, 0.75, na.rm = TRUE))
-
-nrow(wildfire)
-```
-
 Your written report goes here!
 
 ::: callout-important
@@ -86,16 +31,11 @@ Before you submit, make sure your code chunks are turned off with `echo: false` 
 :::
 
 ```{r}
+#| label: pairwise-plot-matrix
 
-wildfire |> 
-  filter(fire_size >= quantile(fire_size, 0.15, na.rm = TRUE) & 
-         fire_size <= quantile(fire_size, 0.85, na.rm = TRUE)) |> 
-  ggplot(aes(x = fire_size)) +
-    geom_histogram() +
-    labs(title = "Distribution of Fire Sizes (Middle 50%)",
-         x = "Fire Size",
-         y = "Frequency")
-
+wildfire |>
+  select(fire_mag, Temp_cont, Wind_cont, Prec_cont, stat_cause_descr) |>
+  ggpairs()
 ```
 
 ```{r}
