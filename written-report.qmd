@@ -10,6 +10,110 @@ execute:
 editor: visual
 ---
 
+::: callout-important
+Before you submit, make sure your code chunks are turned off with `echo: false` and there are no warnings or messages with `warning: false` and `message: false` in the YAML.Introduction
+:::
+
+## Introduction
+
+Wildfires are among the most destructive natural disasters, causing significant environmental, economic, and human losses. In recent years, California has experienced some of the largest and most costly wildfires on record. These fires have burned [millions of acres](https://www.latimes.com/business/story/2025-01-24/estimated-cost-of-fire-damage-balloons-to-more-than-250-billion), [forced thousands of residents to evacuate](https://apnews.com/article/california-fires-los-angeles-winds-300bac5d21394adf9d44493c4ccd337b#:~:text=Bluesky-,CASTAIC%2C%20Calif.,giving%20them%20the%20upper%20hand.), and caused [billions of dollars in damages](https://www.latimes.com/business/story/2025-01-24/estimated-cost-of-fire-damage-balloons-to-more-than-250-billion). The increasing scale and frequency of wildfires emphasize the need for improved wildfire risk assessment and management strategies. Climate change has intensified drought conditions, reduced vegetation moisture, and increased fuel availability, making wildfire behavior more unpredictable. Understanding the factors that influence the total area burned is critical for developing strategies to allocate resources efficiently and minimize damage.
+
+This project examines wildfire attributes, environmental conditions, and geographical factors to predict the total burned area of a wildfire. Historical wildfire data, meteorological variables, and vegetation characteristics will be analyzed to determine the primary drivers of fire spread. Key variables such as fire intensity, temperature, wind speed, humidity, precipitation, and land cover type will be evaluated for their impact on total acres burned. The objective is to develop a predictive model that estimates wildfire size based on these factors. A more accurate understanding of fire spread dynamics will provide valuable insights for firefighting agencies, land managers, and policymakers to enhance wildfire preparedness and response efforts.
+
+[Research Question:]{.underline}
+
+What environmental and fire-specific factors influence wildfire size, and can we develop a predictive model to estimate burned area based on weather conditions, vegetation type, and remoteness?
+
+[Motivation & Importance]{.underline}
+
+Wildfire response teams must quickly assess fire severity and determine the best course of action to contain and mitigate damage. However, limited firefighting resources often require prioritization based on expected fire growth. If fire size can be accurately predicted based on vegetation type, weather conditions, and remoteness, fire departments and policymakers can make more informed decisions about resource allocation and risk mitigation.
+
+The relevance of this research is especially important given the recent large-scale wildfires in California. By understanding the key factors that influence fire size, fire agencies can prioritize high-risk areas, adjust strategies proactively, and potentially reduce the total area burned.
+
+Beyond California, predicting fire size is useful for national and global wildfire management and could help with disaster preparedness and policy development efforts. By identifying the most influential factors in fire spread and burned area, we hope to provide insights to improve fire prevention and suppression planning.
+
+[Key Variables:]{.underline}
+
+The [dataset](https://github.com/varunr89/smokey/blob/master/FW_Veg_Rem_Combined.csv) we will be using in this project is a subset of U.S. wildfire data, supplemented with additional attributes related to weather, vegetation, and fire remoteness. The data is compiled from four sources:
+
+[Sources:]{.underline}
+
+1.  Short, Karen C. 2017. Spatial wildfire occurrence data for the United States, 1992-2015 \[FPA_FOD_20170508\]. 4th Edition. Fort Collins, CO: Forest Service Research Data Archive. <https://doi.org/10.2737/RDS-2013-0009.4>
+
+    This dataset provides information on 1.88 million recorded wildfires in the United States, including information fire size, cause, location, and containment time. A random sample of 50,000 fires was selected for this dataset. The dataset integrates records from the Fire Program Analysis (FPA) Fire-Occurrence Database (FOD), which consolidates information from agencies such as the U.S. Forest Service, Bureau of Land Management, and National Park Service.
+
+2.  NOAA National Centers for Environmental Information (2001): Integrated Surface Hourly (1992-2015) - <https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database>
+
+    NOAA gathers Integrated Surface Hourly data from thousands of global weather stations, including those managed by the National Weather Service, the Federal Aviation Administration, and international meteorological organizations. The data include hourly observations of temperature, wind speed, humidity, and other meteorological variables, primarily collected through automated and manual weather stations.
+
+3.  Meiyappan, Prasanth, and Atul K. Jain. "Three distinct global estimates of historical land-cover change and land-use conversions for over 200 years." Frontiers of Earth Science 6.2 (2012) - <https://bg.copernicus.org/preprints/11/C2254/2014/bgd-11-C2254-2014-supplement.pdf>
+
+    This dataset provides information on the dominant vegetation types in the areas where fires occurred (which can impact fire behavior). Records in this datase span from 1765 to 2010.
+
+4.  "World Cities Database." Simplemaps, <https://simplemaps.com/data/world-cities>
+
+    Simplemaps compiles city location data from various authoritative sources, including government databases, geographic surveys, and other publicly available records. The dataset includes information such as city names, coordinates, population estimates, and administrative divisions.
+
+The compiled dataset (which we will be using in our analysis) consists of 43 variables, including attributes such as fire name, size, class, cause, location (latitude/longitude, state), discovery month, containment time, and environmental conditions before and during the fire event. Weather-related variables include temperature, wind speed, humidity, and precipitation recorded at multiple time points (30, 15, and 7 days before containment, as well as on the day the fire was contained). Some key variables from the dataset are:
+
+-   `fire_name`: The official or recorded name of the fire incident.
+
+-   `fire_size` (acres): The total area burned by the fire, measured in acres.
+
+-   `fire_size_class`: The classification of fire size based on a standard A-G scale, where each class represents a different range of fire sizes.
+
+-   `stat_cause_descr`: The documented cause of the fire, such as lightning, human activity, or equipment use. latitude (degrees): The geographical latitude coordinate of the fire's point of origin, measured in decimal degrees.
+
+-   `longitude` (degrees): The geographical longitude coordinate of the fire's point of origin, measured in decimal degrees.
+
+-   `state`: The U.S. state where the fire occurred.
+
+-   `discovery_month:` The month in which the fire was first detected or officially reported. putout_time (days): The total duration from the fire's discovery to its containment, measured in days.
+
+-   `disc_pre_year`: The calendar year in which the fire was first discovered or officially recorded. Vegetation: The dominant type of vegetation in the fire-affected area, categorized into specific vegetation classes, such as tropical forests, grasslands, shrublands, and urban land.
+
+-   `fire_mag` (scaled value): A relative measure of fire intensity, derived from fire size and other factors, used to indicate the severity of the fire.
+
+-   `Temp_pre_30` (°C): The recorded temperature at the fire location up to 30 days before the fire was contained, measured in degrees Celsius.
+
+-   `Temp_pre_15` (°C): The recorded temperature at the fire location up to 15 days before the fire was contained, measured in degrees Celsius.
+
+-   `Temp_pre_7` (°C): The recorded temperature at the fire location up to 7 days before the fire was contained, measured in degrees Celsius.
+
+-   `Temp_cont` (°C): The temperature recorded at the fire location on the day the fire was officially contained, measured in degrees Celsius.
+
+-   `Wind_pre_30` (m/s): The wind speed at the fire location up to 30 days before containment, measured in meters per second.
+
+-   `Wind_pre_15` (m/s): The wind speed at the fire location up to 15 days before containment, measured in meters per second.
+
+-   `Wind_pre_7` (m/s): The wind speed at the fire location up to 7 days before containment, measured in meters per second. Wind_cont (m/s): The wind speed recorded at the fire location on the day the fire was contained, measured in meters per second.
+
+-   `Hum_pre_30` (%): The humidity level at the fire location up to 30 days before containment, expressed as a percentage.
+
+-   `Hum_pre_15` (%): The humidity level at the fire location up to 15 days before containment, expressed as a percentage.
+
+-   `Hum_pre_7` (%): The humidity level at the fire location up to 7 days before containment, expressed as a percentage.
+
+-   `Hum_cont` (%): The humidity level recorded at the fire location on the day the fire was contained, expressed as a percentage.
+
+-   `Prec_pre_30` (mm): The total amount of precipitation recorded at the fire location up to 30 days before containment, measured in millimeters.
+
+-   `Prec_pre_15` (mm): The total amount of precipitation recorded at the fire location up to 15 days before containment, measured in millimeters.
+
+-   `Prec_pre_7` (mm): The total amount of precipitation recorded at the fire location up to 7 days before containment, measured in millimeters.
+
+-   `Prec_cont` (mm): The total amount of precipitation recorded at the fire location on the day the fire was contained, measured in millimeters.
+
+-   `remoteness` (non-dimensional): A calculated measure representing the distance of the fire’s location from the nearest city or major populated area, expressed as a non-dimensional value.
+
+## Exploratory Data Analysis
+
+#### Data Cleaning
+
+In order to focus on wildfires that are more manageable and relevant to fire prevention strategies, we filtered our dataset to include only the middle 50% of wildfire sizes (interquartile range). We excluded the smallest fires because they often burn insignificantly small areas (\<1-2 acres) and may not require extensive intervention. Similarly, we removed the largest fires since they represent extreme cases that are difficult to control and may not reflect the majority of wildfires that fire management teams can realistically contain more effectively.
+
+To prepare the dataset, we first removed observations with missing values in key variables (`fire_mag`, `stat_cause_descr`, `Vegetation`, `remoteness`, `Prec_pre_7`, `Hum_pre_7`, `fire_size`, `putout_time`) to ensure completeness. We then extracted numeric values from `putout_time` for consistency in analysis. Finally, we filtered the dataset to retain only the middle 50% of fire sizes using the interquartile range (IQR), so that our analysis remains focused on wildfires that are more representative of common fire management challenges.
+
 ```{r}
 #| label: load-packages-and-data
 #| echo: false
@@ -49,30 +153,72 @@ wildfire_clean_50 <- wildfire |>
 write_csv(wildfire_clean_50, "data/wildfire_clean_50.csv")
 ```
 
-::: callout-important
-Before you submit, make sure your code chunks are turned off with `echo: false` and there are no warnings or messages with `warning: false` and `message: false` in the YAML.
-:::
+#### Exploratory Data Analysis - Pairwise Plots
+
+We began our analysis by creating pairwise plots to explore relationships between key numerical variables related to fire behavior, environmental conditions, and containment efforts. Since pairwise plots display scatterplots and correlations, we focused on continuous numerical variables that likely impact wildfire dynamics.
+
+For the first pairwise plot, we examined the relationship between fire intensity, wind speed, and humidity. Fire intensity, represented by `fire_mag`, serves as a measure of how severe a wildfire is. Wind speed on the day of containment, `Wind_cont`, is an important factor because stronger winds can accelerate fire spread and make containment efforts more difficult. Humidity on the containment day, `Hum_cont`, was included since higher humidity levels can slow fire spread by increasing moisture in vegetation and the surrounding environment. Analyzing these three variables together provides insight into how atmospheric conditions influence wildfire intensity and containment efforts.
+
+For the second pairwise plot, we selected temperature, precipitation, and remoteness to understand how fire conditions are affected by climate and location. Temperature on the day of containment, `Temp_cont`, plays a significant role because higher temperatures dry out vegetation, creating more favorable conditions for fire spread. Precipitation in the seven days prior to containment, `Prec_pre_7`, is relevant since recent rainfall can increase soil and vegetation moisture, which may reduce fire intensity. The remoteness of a fire’s location, `remoteness`, influences how quickly firefighting resources can reach the site, which can affect containment time. Analysis of these variables allow us to better understand how environmental factors and accessibility impact wildfire behavior.
 
 ```{r}
-#| label: pairwise-plot-matrix
+#| label: pairwise-plot-1
+#| echo: false
+#| warning: false
 
-wildfire |>
-  select(fire_mag, Temp_cont, Wind_cont, Prec_cont, stat_cause_descr) |>
-  ggpairs()
+
+ggpairs(
+  wildfire_clean_50 |> 
+    select(fire_mag, Wind_cont, Hum_cont),
+  columnLabels = c(
+    "Fire Intensity",
+    "Wind (m/s)",
+    "Humidity (%)"
+  ),
+  title = "Fire Intensity vs. Wind & Humidity"
+)
 ```
 
 ```{r}
+#| label: pairwise-plot-2
+#| echo: false
+#| warning: false
 
-
-wildfire %>%
-  filter(fire_size >= quantile(fire_size, 0.25, na.rm = TRUE) & 
-         fire_size <= quantile(fire_size, 0.75, na.rm = TRUE)) %>%
-  ggplot(aes(x = fire_size)) +
-    geom_histogram() +
-    labs(title = "Distribution of Fire Sizes (Middle 50%)",
-         x = "Fire Size",
-         y = "Frequency")
+ggpairs(
+  wildfire_clean_50 |> 
+    select(Temp_cont, Prec_pre_7, remoteness),
+  columnLabels = c(
+    "Temp (°C)",
+    "Prec. 7d (mm)",
+    "Remote"
+  ),
+  title = "Temperature vs. Precipitation & Remoteness"
+)
 ```
+
+From our pairwise scatterplots, we observed that many relationships between variables do not follow a clear linear trend. One main observation is the vertical clustering of data points in several scatterplots, where points appear stacked on top of one another at specific values. This pattern is evident in fire intensity versus wind speed and fire intensity versus humidity in the first plot, as well as temperature versus precipitation, temperature versus remoteness, and precipitation versus remoteness in the second plot. This clustering suggests that many of the measurements in our dataset are recorded in discrete increments rather than as continuous values. For example, wind speed and humidity may be rounded to the nearest whole number or recorded at set intervals, leading to apparent groupings in the data. Similarly, precipitation data may be stored as categorical or interval-based values rather than precise continuous measurements. This is an important consideration when preparing the dataset for modeling, as data transformation techniques may need to account for these discrete measurement patterns.
+
+#### Exploratory Data Analysis - Univariate EDA
+
+As part of our univariate EDA, we first analyzed our response variable, fire_size, to understand its distribution and variability.
+
+```{r}
+#| label: fire-size-dist
+#| echo: false
+#| warning: false
+
+ggplot(wildfire_clean_50, aes(x = fire_size)) +
+  geom_histogram() +
+  labs(
+    title = "Distribution of Wildfire Sizes",
+    subtitle = "Moderate Wildfires (Middle 50% of Fire Sizes)",
+    x = "Fire Size (acres)",
+    y = "Frequency"
+  ) +
+  theme_minimal()
+```
+
+Based on the histogram below, the distribution of fire size in our dataset appears to be right-skewed and unimodal. (As we can see in the histogram, the distribution has a long right tail, which indicates that while most wildfires in the dataset are relatively small, a smaller number of larger fires extend the range and pull the mean fire size to the right.) Only the middle 50% (IQR) of wildfires are shown in this histogram to focus on moderate-sized fires that are more relevant for management and containment strategies. Even within this subset, there is a clear peak around a frequency of \~4000 for wildfires that burn less than 1-2 acres of land.
 
 ```{r}
 #Vegetation univariate EDA
