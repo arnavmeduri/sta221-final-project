@@ -1,5 +1,5 @@
 ---
-title: "Your project title"
+title: "Predicting Total Burned Area of Wildfires Using Environmental and Fire Characteristics"
 author: "Info Innovators - Kevin Mao, Arnav Meduri, Ben Trokenheim, Ricardo Urena"
 date: "March 20, 2025"
 format: pdf
@@ -12,6 +12,8 @@ editor: visual
 
 ```{r}
 #| label: load-packages-and-data
+#| echo: false
+#| warning: false
 
 library(tidyverse)
 library(tidymodels)
@@ -21,23 +23,28 @@ library(stringr)
 library(GGally)
 
 wildfire <- read_csv("data/FW_Veg_Rem_Combined.csv")
-glimpse(wildfire)
 ```
 
 ```{r}
-#| label: data-filtering
+#| label: data-cleaning
+#| echo: false
+#| warning: false
 
 wildfire_clean_50 <- wildfire |> 
-  drop_na(fire_mag, stat_cause_descr, Vegetation, remoteness, Prec_pre_7,
-          Hum_pre_7, fire_size, putout_time) |> 
+  drop_na(
+    fire_mag, stat_cause_descr, Vegetation, remoteness, 
+    Prec_pre_7, Hum_pre_7, fire_size, putout_time
+  ) |> 
   mutate(
     putout_time_num = parse_number(putout_time)
   ) |> 
   filter(
-    between(fire_size, quantile(fire_size, 0.25, na.rm = TRUE), 
-                    quantile(fire_size, 0.75, na.rm = TRUE))
+    between(
+      fire_size, 
+      quantile(fire_size, 0.25, na.rm = TRUE), 
+      quantile(fire_size, 0.75, na.rm = TRUE)
+    )
   )
-
 
 write_csv(wildfire_clean_50, "data/wildfire_clean_50.csv")
 ```
