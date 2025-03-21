@@ -211,3 +211,58 @@ ggplot(wildfire_clean_50, aes(x = precip_bin, y = fire_size)) +
 The scatterplot of `Prec_pre_15` and `fire_size` shows no strong relationship between prior precipitation and fire size. Most fires occurred with little to no precipitation, and there is substantial variability in fire size regardless of precipitation level. A few extreme precipitation values do not appear to have a significant effect on fire size.
 
 The boxplot comparing precipitation bins (0 or less, 0-10mm, 10mm+) reveals similar distributions of fire size across all groups, with no meaningful differences in medians or spread. This suggests that precipitation up to 15 days prior to a fire may have limited impact on the size of the fire in this dataset.
+
+------------------------------------------------------------------------
+
+```{r}
+# Univariate EDA for Temp_pre_30 Variable
+summary(wildfire_clean_50$Temp_pre_30)
+
+ggplot(wildfire_clean_50, aes(x = Temp_pre_30)) +
+  geom_histogram() +
+  labs(
+    title = "Distribution of Temp_pre_30",
+    x = "Latitude",
+    y = "Frequency"
+  ) +
+  theme_minimal()
+```
+
+Temp_pre_30 is defined as the temperature in deg C at the location of fire upto 30 days prior.
+
+```{r}
+#Bivariate EDA for Temp_pre_30 Variable
+ggplot(wildfire_clean_50, aes(x = Temp_pre_30, y = fire_size)) +
+  geom_point(alpha = 0.5, color = "blue") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "Fire Size vs. Temperature (30 Days Prior)",
+       x = "Temperature (°C)",
+       y = "Fire Size (acres)") +
+  theme_minimal()
+```
+
+------------------------------------------------------------------------
+
+```{r}
+# Univariate EDA for Remoteness Variable
+summary(wildfire_clean_50$remoteness)
+ggplot(wildfire_clean_50, aes(x = remoteness)) +
+  geom_histogram() +
+  labs(
+    title = "Distribution of remoteness",
+    x = "remoteness",
+    y = "Frequency"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#Bivariate 
+ggplot(wildfire_clean_50, aes(x = remoteness, y = fire_size)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "Fire Size vs. Remoteness",
+       x = "Remoteness (Non-Dimensional Distance)",
+       y = "Fire Size (acres)") +
+  theme_minimal()
+```
