@@ -140,7 +140,8 @@ wildfire_clean_50 <- wildfire |>
     Prec_pre_7, Hum_pre_7, fire_size, putout_time
   ) |> 
   mutate(
-    putout_time_num = parse_number(putout_time)
+    putout_time_num = parse_number(putout_time),
+    Vegetation = factor(Vegetation)
   ) |> 
   filter(
     between(
@@ -308,6 +309,12 @@ cor(wildfire_clean_50$latitude, wildfire_clean_50$fire_size, use = "complete.obs
 Not really any relationship between latitude and fire_size
 
 ```{r}
+
+mean(wildfire_clean_50$Prec_pre_15)
+median(wildfire_clean_50$Prec_pre_15)
+```
+
+```{r}
 # univariate EDA for pre_cont_15
 summary(wildfire_clean_50$Prec_pre_15)
 ggplot(wildfire_clean_50, aes(x = Prec_pre_15)) +
@@ -423,4 +430,18 @@ ggplot(wildfire_clean_50, aes(x = remoteness, y = fire_size)) +
   theme_minimal()
 ```
 
-The scatter plot illustrates the relationship between fire size and remoteness. The red regression line shows a slight positive trend, suggesting that more remote fires tend to be slightly larger. Most fires occur in areas closer to cities, as indicated by the dense clustering on the left side of the plot. While some larger fires occur in highly remote areas, the overall pattern does not strongly indicate that remoteness is a key driver of fire size. 
+The scatter plot illustrates the relationship between fire size and remoteness. The red regression line shows a slight positive trend, suggesting that more remote fires tend to be slightly larger. Most fires occur in areas closer to cities, as indicated by the dense clustering on the left side of the plot. While some larger fires occur in highly remote areas, the overall pattern does not strongly indicate that remoteness is a key driver of fire size.
+
+```{r}
+
+ggplot(wildfire_clean_50, aes(x = Prec_pre_30, y = fire_size, color = Vegetation)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "Fire Size vs. Precipitation (30 Days Prior)",
+       x = "Precipitation 30 Days Prior (mm)",
+       y = "Fire Size (acres)") +
+  theme_minimal() +
+  facet_wrap(~Vegetation)
+```
+
+This figure suggests that the relationship between precipitation (30 days prior) and fire size varies across different vegetation types. The slopes of the regression lines differ by vegetation category. This could indicate that precipitation might have differing effects on fire size depending on the vegetation type. Thus, an interaction between precipitation and vegetation type could add to a model predicting fire size.
