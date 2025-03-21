@@ -56,23 +56,17 @@ The [dataset](https://github.com/varunr89/smokey/blob/master/FW_Veg_Rem_Combined
 
 The compiled dataset (which we will be using in our analysis) consists of 43 variables, including attributes such as fire name, size, class, cause, location (latitude/longitude, state), discovery month, containment time, and environmental conditions before and during the fire event. Weather-related variables include temperature, wind speed, humidity, and precipitation recorded at multiple time points (30, 15, and 7 days before containment, as well as on the day the fire was contained). Some key variables from the dataset are:
 
--   `fire_name`: The official or recorded name of the fire incident.
-
 -   `fire_size` (acres): The total area burned by the fire, measured in acres.
 
 -   `fire_size_class`: The classification of fire size based on a standard A-G scale, where each class represents a different range of fire sizes.
 
 -   `stat_cause_descr`: The documented cause of the fire, such as lightning, human activity, or equipment use. latitude (degrees): The geographical latitude coordinate of the fire's point of origin, measured in decimal degrees.
 
--   `longitude` (degrees): The geographical longitude coordinate of the fire's point of origin, measured in decimal degrees.
-
 -   `state`: The U.S. state where the fire occurred.
 
 -   `discovery_month:` The month in which the fire was first detected or officially reported. putout_time (days): The total duration from the fire's discovery to its containment, measured in days.
 
--   `disc_pre_year`: The calendar year in which the fire was first discovered or officially recorded. Vegetation: The dominant type of vegetation in the fire-affected area, categorized into specific vegetation classes, such as tropical forests, grasslands, shrublands, and urban land.
-
--   `fire_mag` (scaled value): A relative measure of fire intensity, derived from fire size and other factors, used to indicate the severity of the fire.
+-   `Vegetation`: The dominant type of vegetation in the fire-affected area, categorized into specific vegetation classes, such as tropical forests, grasslands, shrublands, and urban land.
 
 -   `Temp_pre_30` (°C): The recorded temperature at the fire location up to 30 days before the fire was contained, measured in degrees Celsius.
 
@@ -112,7 +106,7 @@ The compiled dataset (which we will be using in our analysis) consists of 43 var
 
 In order to focus on wildfires that are more manageable and relevant to fire prevention strategies, we filtered our dataset to include only the middle 50% of wildfire sizes (interquartile range). We excluded the smallest fires because they often burn insignificantly small areas (\<1-2 acres) and may not require extensive intervention. Similarly, we removed the largest fires since they represent extreme cases that are difficult to control and may not reflect the majority of wildfires that fire management teams can realistically contain more effectively.
 
-To prepare the dataset, we first removed observations with missing values in key variables (`fire_mag`, `stat_cause_descr`, `Vegetation`, `remoteness`, `Prec_pre_7`, `Hum_pre_7`, `fire_size`, `putout_time`) to ensure completeness. We then extracted numeric values from `putout_time` for consistency in analysis. Finally, we filtered the dataset to retain only the middle 50% of fire sizes using the interquartile range (IQR), so that our analysis remains focused on wildfires that are more representative of common fire management challenges.
+To prepare the dataset, we first removed observations with missing values in key variables (`fire_mag`, `stat_cause_descr`, `Vegetation`, `remoteness`, `Prec_pre_15`, `Hum_pre_7`, `fire_size`, `putout_time`) to ensure completeness. We then extracted numeric values from `putout_time` for consistency in analysis. Finally, we filtered the dataset to retain only the middle 50% of fire sizes using the interquartile range (IQR), so that our analysis remains focused on wildfires that are more representative of common fire management challenges.
 
 ```{r}
 #| label: load-packages-and-data
@@ -137,7 +131,7 @@ wildfire <- read_csv("data/FW_Veg_Rem_Combined.csv")
 wildfire_clean_50 <- wildfire |> 
   drop_na(
     fire_mag, stat_cause_descr, Vegetation, remoteness, 
-    Prec_pre_7, Hum_pre_7, fire_size, putout_time
+    Prec_pre_15, Hum_pre_7, fire_size, putout_time
   ) |> 
   mutate(
     putout_time_num = parse_number(putout_time),
@@ -160,7 +154,7 @@ We began our analysis by creating pairwise plots to explore relationships betwee
 
 For the first pairwise plot, we examined the relationship between fire intensity, wind speed, and humidity. Fire intensity, represented by `fire_mag`, serves as a measure of how severe a wildfire is. Wind speed on the day of containment, `Wind_cont`, is an important factor because stronger winds can accelerate fire spread and make containment efforts more difficult. Humidity on the containment day, `Hum_cont`, was included since higher humidity levels can slow fire spread by increasing moisture in vegetation and the surrounding environment. Analyzing these three variables together provides insight into how atmospheric conditions influence wildfire intensity and containment efforts.
 
-For the second pairwise plot, we selected temperature, precipitation, and remoteness to understand how fire conditions are affected by climate and location. Temperature on the day of containment, `Temp_cont`, plays a significant role because higher temperatures dry out vegetation, creating more favorable conditions for fire spread. Precipitation in the seven days prior to containment, `Prec_pre_7`, is relevant since recent rainfall can increase soil and vegetation moisture, which may reduce fire intensity. The remoteness of a fire’s location, `remoteness`, influences how quickly firefighting resources can reach the site, which can affect containment time. Analysis of these variables allow us to better understand how environmental factors and accessibility impact wildfire behavior.
+For the second pairwise plot, we selected temperature, precipitation, and remoteness to understand how fire conditions are affected by climate and location. Temperature on the day of containment, `Temp_cont`, plays a significant role because higher temperatures dry out vegetation, creating more favorable conditions for fire spread. Precipitation in the seven days prior to containment, `Prec_pre_15`, is relevant since recent rainfall can increase soil and vegetation moisture, which may reduce fire intensity. The remoteness of a fire’s location, `remoteness`, influences how quickly firefighting resources can reach the site, which can affect containment time. Analysis of these variables allow us to better understand how environmental factors and accessibility impact wildfire behavior.
 
 ```{r}
 #| label: pairwise-plot-1
@@ -187,10 +181,10 @@ ggpairs(
 
 ggpairs(
   wildfire_clean_50 |> 
-    select(Temp_cont, Prec_pre_7, remoteness),
+    select(Temp_cont, Prec_pre_15, remoteness),
   columnLabels = c(
     "Temp (°C)",
-    "Prec. 7d (mm)",
+    "Prec. 15d (mm)",
     "Remote"
   ),
   title = "Temperature vs. Precipitation & Remoteness"
@@ -432,16 +426,20 @@ ggplot(wildfire_clean_50, aes(x = remoteness, y = fire_size)) +
 
 The scatter plot illustrates the relationship between fire size and remoteness. The red regression line shows a slight positive trend, suggesting that more remote fires tend to be slightly larger. Most fires occur in areas closer to cities, as indicated by the dense clustering on the left side of the plot. While some larger fires occur in highly remote areas, the overall pattern does not strongly indicate that remoteness is a key driver of fire size.
 
+#### Interaction Effects
+
 ```{r}
 
-ggplot(wildfire_clean_50, aes(x = Prec_pre_30, y = fire_size, color = Vegetation)) +
+ggplot(wildfire_clean_50, aes(x = Prec_pre_15, y = fire_size, color = Vegetation)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, color = "red") +
-  labs(title = "Fire Size vs. Precipitation (30 Days Prior)",
-       x = "Precipitation 30 Days Prior (mm)",
+  labs(title = "Fire Size vs. Precipitation (15 Days Prior)",
+       x = "Precipitation 15 Days Prior (mm)",
        y = "Fire Size (acres)") +
   theme_minimal() +
-  facet_wrap(~Vegetation)
+  facet_wrap(~Vegetation) +
+  scale_x_continuous(breaks = seq(0, 3000, by = 500)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-This figure suggests that the relationship between precipitation (30 days prior) and fire size varies across different vegetation types. The slopes of the regression lines differ by vegetation category. This could indicate that precipitation might have differing effects on fire size depending on the vegetation type. Thus, an interaction between precipitation and vegetation type could add to a model predicting fire size.
+This figure suggests that the relationship between precipitation (15 days prior) and fire size varies across different vegetation types. The slopes of the regression lines differ by vegetation category. This could indicate that precipitation might have differing effects on fire size depending on the vegetation type. Thus, an interaction between precipitation and vegetation type could add to a model predicting fire size.
