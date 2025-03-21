@@ -374,7 +374,9 @@ ggplot(wildfire_clean_50, aes(x = Temp_pre_30)) +
   theme_minimal()
 ```
 
-Temp_pre_30 is defined as the temperature in deg C at the location of fire upto 30 days prior.
+The distribution of Temp_pre_30, which represents the temperature at the location of a fire up to 30 days prior, shows a wide range of values, spanning from -49.211°C to 41.678°C. The minimum recorded temperature of -49.211°C is exceptionally low and may indicate an outlier or a potential data entry error, especially considering that there are few locations that can get that could and have a fire. Additionally, the first quartile (Q1) of -1.000°C suggests that at least 25% of recorded fires happened in temperatures at or below freezing, which could indicate that fires occurred in cold regions or during winter months.
+
+The median temperature of 8.310°C suggests that half of the recorded fires occurred in moderate conditions, while the mean of 9.562°C, which is slightly higher than the median, indicates that the distribution is right-skewed. This means that some extremely high-temperature values (above 40°C) may be pulling the average up. The maximum recorded temperature of 41.678°C suggests that some fires took place in extremely hot environments, which does make a lot of sense.
 
 ```{r}
 #Bivariate EDA for Temp_pre_30 Variable
@@ -386,6 +388,8 @@ ggplot(wildfire_clean_50, aes(x = Temp_pre_30, y = fire_size)) +
        y = "Fire Size (acres)") +
   theme_minimal()
 ```
+
+The scatter plot shows the relationship between fire size and temperature 30 days prior, with little evidence of a strong correlation. The nearly flat regression line suggests that temperature alone is not a key predictor of fire size. Most fires occurred between 0°C and 25°C, with fire sizes clustered at lower values. There also does seem to be a large amount of fires that are recorded at 20, 30, 40, and 50 acres for fire size indicating that many of these may have been rounded. 
 
 ------------------------------------------------------------------------
 
@@ -402,6 +406,12 @@ ggplot(wildfire_clean_50, aes(x = remoteness)) +
   theme_minimal()
 ```
 
+The variable remoteness, which represents the non-dimensional distance to the closest city, has a distribution ranging from 0.0000 to 0.98899. The minimum value of 0 suggests that some fires occurred basically within cities, while the maximum value of 1 indicating the farthest fire away. However, the fire with value of 1 in remoteness may have been removed when we cleaned the data.
+
+The first quartile of 0.1450 means that 25% of the fires occurred in areas where remoteness was relatively low, suggesting proximity to cities or towns. The median value of 0.2002 indicates that half of the fires took place in areas with remoteness below this threshold, meaning that most fires are moderately close to urban areas rather than in extremely remote locations. However, the mean value of 0.2403 is slightly higher than the median, which suggests that the distribution is right-skewed, meaning that a small number of fires occurred in highly remote areas, pulling the average upward. This skewness is further confirmed by the third quartile (Q3) of 0.3018, showing that 75% of fires occurred in areas with remoteness below this level, while the remaining 25% took place in much more remote regions.
+
+This distribution suggests that most fires tend to occur closer to urban areas rather than in extremely remote locations, but a minority of cases involve fires in highly remote regions.
+
 ```{r}
 #Bivariate 
 ggplot(wildfire_clean_50, aes(x = remoteness, y = fire_size)) +
@@ -412,3 +422,5 @@ ggplot(wildfire_clean_50, aes(x = remoteness, y = fire_size)) +
        y = "Fire Size (acres)") +
   theme_minimal()
 ```
+
+The scatter plot illustrates the relationship between fire size and remoteness. The red regression line shows a slight positive trend, suggesting that more remote fires tend to be slightly larger. Most fires occur in areas closer to cities, as indicated by the dense clustering on the left side of the plot. While some larger fires occur in highly remote areas, the overall pattern does not strongly indicate that remoteness is a key driver of fire size. 
