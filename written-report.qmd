@@ -447,3 +447,13 @@ ggplot(wildfire_clean_50, aes(x = Prec_pre_15, y = fire_size, color = Vegetation
 ```
 
 This figure suggests that the relationship between precipitation (15 days prior) and fire size varies across different vegetation types. The slopes of the regression lines differ by vegetation category. This could indicate that precipitation might have differing effects on fire size depending on the vegetation type. Thus, an interaction between precipitation and vegetation type could add to a model predicting fire size.
+
+```{r}
+
+fire_main_fit <- lm(fire_size ~ remoteness + Prec_pre_15 + Temp_pre_15 + Vegetation + stat_cause_descr + Wind_cont, data = wildfire_clean_50)
+
+fire_int_fit <- lm(fire_size ~ remoteness + Temp_pre_15 + Prec_pre_15 * Vegetation + stat_cause_descr + Wind_cont, data = wildfire_clean_50)
+
+glance(fire_main_fit)$adj.r.squared
+glance(fire_int_fit)$adj.r.squared
+```
