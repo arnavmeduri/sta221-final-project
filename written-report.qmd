@@ -450,9 +450,9 @@ This figure suggests that the relationship between precipitation (15 days prior)
 
 ```{r}
 
-fire_main_fit <- lm(fire_size ~ remoteness + Prec_pre_15 + Temp_pre_15 + Vegetation + stat_cause_descr + Wind_cont, data = wildfire_clean_50)
+fire_main_fit <- lm(log(fire_size) ~ remoteness + Prec_pre_15 + Temp_pre_15 + Vegetation + stat_cause_descr + Wind_cont, data = wildfire_clean_50)
 
-fire_int_fit <- lm(fire_size ~ remoteness + Temp_pre_15 + Prec_pre_15 * Vegetation + stat_cause_descr + Wind_cont, data = wildfire_clean_50)
+fire_int_fit <- lm(log(fire_size) ~ remoteness + Temp_pre_15 + Prec_pre_15 * Vegetation + stat_cause_descr + Wind_cont, data = wildfire_clean_50)
 
 tidy(fire_main_fit) |> 
   kable(digits = 3)
