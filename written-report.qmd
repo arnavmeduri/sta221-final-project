@@ -468,8 +468,31 @@ ggplot(wildfire_clean_50, aes(x = Prec_pre_15, y = log(fire_size), color = Veget
 
 This figure suggests that the relationship between precipitation (15 days prior) and fire size varies across different vegetation types. The slopes of the regression lines differ by vegetation category. This could indicate that precipitation might have differing effects on fire size depending on the vegetation type. Thus, an interaction between precipitation and vegetation type could add to a model predicting fire size.
 
-```{r}
+## Methodology
 
+First, as part of our modeling process and to determine which variables to include as predictors of wildfire size, we evaluated multicollinearity among the numeric predictors in our dataset. Specifically, we considered environmental variables measured 15 days prior to fire discovery, including precipitation (`Prec_pre_15`), temperature (`Temp_pre_15`), wind speed (`Wind_pre_15`), and humidity (`Hum_pre_15`), as well as `remoteness`, a scaled measure of distance to the nearest city. These variables were selected because they are directly tied to environmental conditions and are available for most observations. To assess multicollinearity, we used the Variance Inflation Factor (VIF), which quantifies how much the variance of each predictor is inflated due to linear dependence with the others. VIF values greater than 5 were used as a threshold to flag potential multicollinearity concerns. As shown in the output, all five predictors had VIF values well below the threshold of 5: precipitation (1.03), temperature (1.12), wind speed (1.24), humidity (1.39), and remoteness (1.20). These results suggest that there is no problematic multicollinearity among the selected predictors, and all variables were retained for use in the model.
+
+```{r}
+library(rms)
+wildfire_vif_fit <- lm(fire_size ~ Prec_pre_15 +
+                                 Temp_pre_15 +
+                                 Wind_pre_15 +
+                                 Hum_pre_15 +
+                                 remoteness,
+                       data = wildfire_clean_50)
+
+vif(wildfire_vif_fit)
+```
+
+After evaluating multicollinearity, we fit two linear regression models to predict wildfire size using a log-transformed version of the response variable (`log(fire_size)`). We applied the log transformation to reduce skewness in the fire size distribution and to stabilize variance. A small constant (`+ 0.001`) was added to `Prec_pre_15` before log transformation to avoid taking the logarithm of zero.
+
+The first model (`fire_main_fit`) included the main effects of `remoteness`, log-transformed `Prec_pre_15`, `Temp_pre_15`, `Vegetation`, `stat_cause_descr`, and `Wind_cont`. The second model (`fire_int_fit`) added an interaction term between `log(Prec_pre_15 + 0.001)` and `Vegetation` to explore whether the effect of precipitation on fire size varies by vegetation type.
+
+The adjusted $R^{2}$ values for the models were low: 0.037 for the main-effects model and 0.041 for the interaction model. Although the interaction model showed a slightly higher adjusted $R^{2}$, the difference in explained variance was minimal.
+
+To evaluate predictive accuracy, we computed the root mean squared error (RMSE) for both models using the log-transformed fire size. RMSE represents the average difference between the observed and predicted values on the log scale. The main-effects model had an RMSE of approximately 1.06, and the interaction model had a nearly identical RMSE of 1.059. These values indicate that, on average, the predicted log fire sizes differed from the observed values by about 1.057 log-units. Because the models are fit on a logarithmic scale, an error of this magnitude corresponds to a multiplicative factor of roughly 2.7 on the original fire size scale (in acres).
+
+```{r}
 fire_main_fit <- lm(log(fire_size) ~ remoteness + log(Prec_pre_15 + 0.001) + Temp_pre_15 + Vegetation + stat_cause_descr + Wind_cont, data = wildfire_clean_50)
 
 fire_int_fit <- lm(log(fire_size) ~ remoteness + Temp_pre_15 + log(Prec_pre_15 + 0.001) * Vegetation + stat_cause_descr + Wind_cont, data = wildfire_clean_50)
@@ -482,8 +505,55 @@ tidy(fire_int_fit) |>
 
 glance(fire_main_fit)$adj.r.squared
 glance(fire_int_fit)$adj.r.squared
+
+
+# Augment the model results with fitted values
+main_aug <- augment(fire_main_fit, data = wildfire_clean_50) |>
+  mutate(truth = log(fire_size), estimate = .fitted)
+
+int_aug <- augment(fire_int_fit, data = wildfire_clean_50) |>
+  mutate(truth = log(fire_size), estimate = .fitted)
+
+# Compute RMSE using yardstick
+rmse(data = main_aug, truth = truth, estimate = estimate)
+rmse(data = int_aug, truth = truth, estimate = estimate)
 ```
 
-## Methodology
+After evaluating our interaction model, we decided to explore a simpler modeling strategy by converting precipitation into an indicator variable. Rather than using continuous log-transformed precipitation, we created a binary variable to indicate whether any measurable precipitation was recorded 15 days prior to the fire. This choice was motivated by the idea that the presence or absence of precipitation may be more informative for fire behavior than small variations in precipitation amounts, particularly given the high frequency of zero or near-zero values in the dataset.
+
+To do this, we created a new variable called `precip_indicator`, which takes the value 1 if `Prec_pre_15` is greater than 0 and 0 otherwise. We then fit two new models: a main-effects model and an interaction model including the new binary indicator and its interaction with vegetation type. We evaluated model performance using adjusted $R^{2}$ and RMSE on the log-transformed fire size, consistent with earlier analyses.
+
+The adjusted $R^{2}$ or the main-effects model was 0.037. The interaction model had an adjusted $R^{2}$ of 0.039. RMSE values were 1.059 for the main-effects model and 1.058 for the interaction model. These values indicate that the average prediction error on the log scale was approximately 1.06. This corresponds to a multiplicative error of about 2.88 on the original scale of fire size. The differences between these models and the earlier continuous-precipitation models were minimal in both adjusted $R^{2}$ and RMSE.
+
+```{r}
+library(dplyr)
+library(broom)
+library(yardstick)
+
+wildfire_clean_50 <- wildfire_clean_50 %>%
+  mutate(precip_indicator = ifelse(Prec_pre_15 > 0, 1, 0))
+
+fire_main_bin <- lm(log(fire_size) ~ remoteness + precip_indicator +
+                                 Temp_pre_15 + Vegetation +
+                                 stat_cause_descr + Wind_cont,
+                    data = wildfire_clean_50)
+
+fire_int_bin <- lm(log(fire_size) ~ remoteness + Temp_pre_15 +
+                                precip_indicator * Vegetation +
+                                stat_cause_descr + Wind_cont,
+                   data = wildfire_clean_50)
+
+glance(fire_main_bin)$adj.r.squared
+glance(fire_int_bin)$adj.r.squared
+
+main_bin_aug <- augment(fire_main_bin, data = wildfire_clean_50) %>%
+  mutate(truth = log(fire_size), estimate = .fitted)
+
+int_bin_aug <- augment(fire_int_bin, data = wildfire_clean_50) %>%
+  mutate(truth = log(fire_size), estimate = .fitted)
+
+rmse(main_bin_aug, truth = truth, estimate = estimate)
+rmse(int_bin_aug, truth = truth, estimate = estimate)
+```
 
 ## Results
