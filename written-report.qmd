@@ -557,3 +557,11 @@ rmse(int_bin_aug, truth = truth, estimate = estimate)
 ```
 
 ## Results
+
+We fit four linear regression models to predict `log(fire_size)` using combinations of environmental and fire-related predictors. Two models included precipitation as a continuous predictor (`log(Prec_pre_15 + 0.001)`), and two models used a binary indicator variable representing the presence of precipitation. Each modeling approach included a main-effects model and an interaction model with `Vegetation`.
+
+The adjusted $R^2$ values were low across all models. The main-effects model with continuous precipitation (`fire_main_fit`) had an adjusted $R^2$ of 0.037, and the interaction model (`fire_int_fit`) had an adjusted \$R\^2\$ of 0.041. The models using the binary precipitation indicator produced similar results: 0.037 for the main-effects model (`fire_main_bin`) and 0.039 for the interaction model (`fire_int_bin`).
+
+We evaluated prediction error using root mean squared error (RMSE) on the log scale. The RMSE was 1.059 for both `fire_main_fit` and `fire_main_bin`, and slightly lower for the interaction models: 1.057 for `fire_int_fit` and 1.058 for `fire_int_bin`. These values indicate that the average prediction error on the log-transformed scale was around 1.06. On the original scale, this corresponds to a multiplicative prediction error of approximately 2.88 (i.e., \$\\exp(1.06) \\approx 2.88\$).
+
+Overall, there were minimal differences in adjusted $R^2$ and RMSE between the models using continuous precipitation and those using a binary indicator. The addition of interaction terms with `Vegetation` slightly increased model complexity without meaningfully improving predictive performance.
