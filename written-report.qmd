@@ -466,3 +466,7 @@ tidy(fire_int_fit) |>
 glance(fire_main_fit)$adj.r.squared
 glance(fire_int_fit)$adj.r.squared
 ```
+
+## Methodology
+
+## Results
