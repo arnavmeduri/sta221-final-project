@@ -206,7 +206,7 @@ As part of our univariate EDA, we first analyzed our response variable, `fire_si
 #| warning: false
 
 ggplot(wildfire_clean_50, aes(x = fire_size)) +
-  geom_histogram(fill = "steelblue", color = "white") +
+  geom_histogram(fill = "steelblue", color = "black") +
   labs(
     title = "Distribution of Wildfire Sizes",
     subtitle = "Moderate Wildfires (Middle 50% of Fire Sizes)",
