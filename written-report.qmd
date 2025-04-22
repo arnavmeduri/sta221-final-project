@@ -201,7 +201,7 @@ From our pairwise scatterplots, we observed that many relationships between vari
 As part of our univariate EDA, we first analyzed our response variable, `fire_size`, to understand its distribution and variability. Based on the histogram below, the distribution of fire size in our dataset appears to be right-skewed and unimodal. (As we can see in the histogram, the distribution has a long right tail, which indicates that while most wildfires in the dataset are relatively small, a smaller number of larger fires extend the range and pull the mean fire size to the right.) Only the middle 50% (IQR) of wildfires are shown in this histogram to focus on moderate-sized fires that are more relevant for management and containment strategies. Even within this subset, there is a clear peak around a frequency of \~4000 for wildfires that burn less than 1-2 acres of land.
 
 ```{r}
-#| label: fire-size-dist
+#| label: fire-size-distribution
 #| echo: false
 #| warning: false
 
@@ -219,7 +219,7 @@ Next, to better understand the primary causes of wildfires in our dataset, we ex
 
 ```{r}
 ggplot(wildfire_clean_50, aes(y = fct_infreq(stat_cause_descr))) +
-  geom_bar(fill = "orange", color = "white") +
+  geom_bar(fill = "steelblue", color = "white") +
   labs(
     title = "Reported Cause of Wildfires",
     y = "Cause of Fire",
