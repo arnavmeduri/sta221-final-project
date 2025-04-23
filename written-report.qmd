@@ -74,6 +74,36 @@ wildfire <- read_csv("data/FW_Veg_Rem_Combined.csv")
 ```
 
 ```{r}
+#| label: clean-data
+
+wildfire_clean <- wildfire |>
+  mutate(
+    Prec_pre_30 = if_else(Prec_pre_30 == -1, NA_real_, if_else(Prec_pre_30 == 0, 0, 1)),
+    Prec_pre_15 = if_else(Prec_pre_15 == -1, NA_real_, if_else(Prec_pre_15 == 0, 0, 1)),
+    Prec_pre_7  = if_else(Prec_pre_7  == -1, NA_real_, if_else(Prec_pre_7  == 0, 0, 1)),
+    Prec_cont   = if_else(Prec_cont   == -1, NA_real_, if_else(Prec_cont   == 0, 0, 1)),
+    putout_time_num = parse_number(putout_time),
+    Vegetation       = factor(Vegetation),
+    fire_size_class  = factor(fire_size_class),
+    stat_cause_descr = factor(stat_cause_descr),
+    state            = factor(state),
+    discovery_month  = factor(discovery_month),
+    disc_pre_month   = factor(disc_pre_month),
+    wstation_usaf    = factor(wstation_usaf)
+  ) |>
+  drop_na(
+    fire_mag, stat_cause_descr, Vegetation, remoteness,
+    Prec_pre_15, Hum_pre_7, fire_size, putout_time
+  ) |>
+  filter(
+    fire_size >= quantile(fire_size, 0.25, na.rm = TRUE),
+    fire_size <= quantile(fire_size, 0.75, na.rm = TRUE)
+  )
+
+write_csv(wildfire_clean, "data/wildfire_clean.csv")
+```
+
+```{r}
 #| label: data-cleaning
 #| echo: false
 #| warning: false
@@ -474,6 +504,13 @@ After evaluating our interaction model, we decided to explore a simpler modeling
 To do this, we created a new variable called `precip_indicator`, which takes the value 1 if `Prec_pre_15` is greater than 0 and 0 otherwise. We then fit two new models: a main-effects model and an interaction model including the new binary indicator and its interaction with vegetation type. We evaluated model performance using adjusted $R^{2}$ and RMSE on the log-transformed fire size, consistent with earlier analyses.
 
 The adjusted $R^{2}$ or the main-effects model was 0.037. The interaction model had an adjusted $R^{2}$ of 0.039. RMSE values were 1.059 for the main-effects model and 1.058 for the interaction model. These values indicate that the average prediction error on the log scale was approximately 1.06. This corresponds to a multiplicative error of about 2.88 on the original scale of fire size. The differences between these models and the earlier continuous-precipitation models were minimal in both adjusted $R^{2}$ and RMSE.
+
+```{r}
+library(tidyverse)
+install.packages("progress")
+
+
+```
 
 ```{r}
 library(dplyr)
