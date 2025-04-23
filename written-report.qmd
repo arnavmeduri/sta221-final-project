@@ -89,7 +89,17 @@ wildfire_clean <- wildfire |>
     state            = factor(state),
     discovery_month  = factor(discovery_month),
     disc_pre_month   = factor(disc_pre_month),
-    wstation_usaf    = factor(wstation_usaf)
+    wstation_usaf    = factor(wstation_usaf),
+    region = case_when(
+      state %in% c("CT", "ME", "MA", "NH", "RI", "VT", "NJ", "NY", "PA") ~ "Northeast",
+      state %in% c("IL", "IN", "MI", "OH", "WI", "IA", "KS", "MN", "MO", 
+                   "NE", "ND", "SD") ~ "Midwest",
+      state %in% c("DE", "FL", "GA", "MD", "NC", "SC", "VA", "DC", "WV",
+                   "AL", "KY", "MS", "TN", "AR", "LA", "OK", "TX") ~ "South",
+      state %in% c("AZ", "CO", "ID", "MT", "NV", "NM", "UT", "WY",
+                   "AK", "CA", "HI", "OR", "WA") ~ "West",
+      TRUE ~ "Other"
+    ) |> factor()
   ) |>
   drop_na(
     fire_mag, stat_cause_descr, Vegetation, remoteness,
@@ -99,8 +109,6 @@ wildfire_clean <- wildfire |>
     fire_size >= quantile(fire_size, 0.25, na.rm = TRUE),
     fire_size <= quantile(fire_size, 0.75, na.rm = TRUE)
   )
-
-write_csv(wildfire_clean, "data/wildfire_clean.csv")
 ```
 
 ```{r}
@@ -504,13 +512,6 @@ After evaluating our interaction model, we decided to explore a simpler modeling
 To do this, we created a new variable called `precip_indicator`, which takes the value 1 if `Prec_pre_15` is greater than 0 and 0 otherwise. We then fit two new models: a main-effects model and an interaction model including the new binary indicator and its interaction with vegetation type. We evaluated model performance using adjusted $R^{2}$ and RMSE on the log-transformed fire size, consistent with earlier analyses.
 
 The adjusted $R^{2}$ or the main-effects model was 0.037. The interaction model had an adjusted $R^{2}$ of 0.039. RMSE values were 1.059 for the main-effects model and 1.058 for the interaction model. These values indicate that the average prediction error on the log scale was approximately 1.06. This corresponds to a multiplicative error of about 2.88 on the original scale of fire size. The differences between these models and the earlier continuous-precipitation models were minimal in both adjusted $R^{2}$ and RMSE.
-
-```{r}
-library(tidyverse)
-install.packages("progress")
-
-
-```
 
 ```{r}
 library(dplyr)
