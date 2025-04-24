@@ -138,49 +138,6 @@ write_csv(wildfire_clean, "data/wildfire_clean.csv")
 
 #### Exploratory Data Analysis - Pairwise Plots
 
-We began our analysis by creating pairwise plots to explore relationships between key numerical variables related to fire behavior, environmental conditions, and containment efforts. Since pairwise plots display scatterplots and correlations, we focused on continuous numerical variables that likely impact wildfire dynamics.
-
-For the first pairwise plot, we examined the relationship between fire intensity, wind speed, and humidity. Fire intensity, represented by `fire_mag`, serves as a measure of how severe a wildfire is. Wind speed on the day of containment, `Wind_cont`, is an important factor because stronger winds can accelerate fire spread and make containment efforts more difficult. Humidity on the containment day, `Hum_cont`, was included since higher humidity levels can slow fire spread by increasing moisture in vegetation and the surrounding environment. Analyzing these three variables together provides insight into how atmospheric conditions influence wildfire intensity and containment efforts.
-
-For the second pairwise plot, we selected temperature, precipitation, and remoteness to understand how fire conditions are affected by climate and location. Temperature on the day of containment, `Temp_cont`, plays a significant role because higher temperatures dry out vegetation, creating more favorable conditions for fire spread. Precipitation in the seven days prior to containment, `Prec_pre_15`, is relevant since recent rainfall can increase soil and vegetation moisture, which may reduce fire intensity. The remoteness of a fire’s location, `remoteness`, influences how quickly firefighting resources can reach the site, which can affect containment time. Analysis of these variables allow us to better understand how environmental factors and accessibility impact wildfire behavior.
-
-```{r}
-#| label: pairwise-plot-1
-#| echo: false
-#| warning: false
-
-
-ggpairs(
-  wildfire_clean |> 
-    select(fire_mag, Wind_cont, Hum_cont),
-  columnLabels = c(
-    "Fire Intensity",
-    "Wind (m/s)",
-    "Humidity (%)"
-  ),
-  title = "Fire Intensity vs. Wind & Humidity"
-)
-```
-
-```{r}
-#| label: pairwise-plot-2
-#| echo: false
-#| warning: false
-
-ggpairs(
-  wildfire_clean |> 
-    select(Temp_cont, Prec_pre_15, remoteness),
-  columnLabels = c(
-    "Temp (°C)",
-    "Prec. 15d (mm)",
-    "Remote"
-  ),
-  title = "Temperature vs. Precipitation & Remoteness"
-)
-```
-
-From our pairwise scatterplots, we observed that many relationships between variables do not follow a clear linear trend. One main observation is the vertical clustering of data points in several scatterplots, where points appear stacked on top of one another at specific values. This pattern is evident in fire intensity versus wind speed and fire intensity versus humidity in the first plot, as well as temperature versus precipitation, temperature versus remoteness, and precipitation versus remoteness in the second plot. This clustering suggests that many of the measurements in our dataset are recorded in discrete increments rather than as continuous values. For example, wind speed and humidity may be rounded to the nearest whole number or recorded at set intervals, leading to apparent groupings in the data. Similarly, precipitation data may be stored as categorical or interval-based values rather than precise continuous measurements. This is an important consideration when preparing the dataset for modeling, as data transformation techniques may need to account for these discrete measurement patterns.
-
 #### Exploratory Data Analysis - Univariate EDA
 
 As part of our univariate EDA, we first analyzed our response variable, `fire_size`, to understand its distribution and variability. Based on the histogram below, the distribution of fire size in our dataset appears to be right-skewed and unimodal. (As we can see in the histogram, the distribution has a long right tail, which indicates that while most wildfires in the dataset are relatively small, a smaller number of larger fires extend the range and pull the mean fire size to the right.) Only the middle 50% (IQR) of wildfires are shown in this histogram to focus on moderate-sized fires that are more relevant for management and containment strategies. Even within this subset, there is a clear peak around a frequency of \~4000 for wildfires that burn less than 1-2 acres of land.
@@ -192,9 +149,9 @@ As part of our univariate EDA, we first analyzed our response variable, `fire_si
 
 options(repr.plot.width =1, repr.plot.height = 1)
 ggplot(wildfire_clean, aes(x = fire_size)) +
-  geom_histogram(fill = "steelblue", color = "white") +
+  geom_histogram(fill = "cadetblue4", color = "white") +
   labs(
-    title = "Distribution of Wildfire Sizes",
+    title = "Distribution of Burned Area of Wildfires",
     x = "Fire size (acres)",
     y = "Frequency"
   ) +
@@ -204,8 +161,8 @@ ggplot(wildfire_clean, aes(x = fire_size)) +
 Next, to better understand the primary causes of wildfires in our dataset, we examined the stat_cause_descr variable, which provides the reported cause for each fire. The most frequently recorded cause was debris burning (2,821), followed by arson (2,399), miscellaneous causes (1,600), and lightning (1,535). Other causes included equipment use (586), campfires (327), children (240), smoking (213), and powerline-related fires (117). A total of 628 fires were labeled as missing or undefined. Interestingly, we found that many of the top causes (e.g., debris burning, arson, and equipment use) are related to human activity.
 
 ```{r}
-ggplot(wildfire_clean, aes(y = fct_infreq(stat_cause_descr))) +
-  geom_bar(fill = "steelblue", color = "white") +
+ggplot(wildfire_clean, aes(y = fct_infreq(cause_category))) +
+  geom_bar(fill = "cadetblue4", color = "white") +
   labs(
     title = "Reported Cause of Wildfires",
     y = "Cause of Fire",
@@ -459,56 +416,30 @@ This figure suggests that the relationship between precipitation (15 days prior)
 
 #| label: linear-model
 
-exp_fire_fit <- lm(fire_size ~ region + cause_category + remoteness + Vegetation_group +
-                     Wind_pre_15 + Temp_pre_15 + Hum_pre_15, data = wildfire_clean)
+exp_fire_fit <- lm(fire_size ~ region + cause_category + remoteness + 
+                     Vegetation_group + Wind_pre_15 + Prec_pre_15 + 
+                     Temp_pre_15 + Hum_pre_15, data = wildfire_clean)
 
 glance(exp_fire_fit)
 ```
 
 ```{r}
-#| label: residuals-fitted-vals-plot
-
-exp_fire_fit_aug <- augment(exp_fire_fit)
-
-ggplot(exp_fire_fit_aug, aes(x = .fitted, y = .resid)) +
-  geom_point() +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-  labs(
-    x = "Fitted Values",
-    y = "Residuals"
-    ) +
-  theme_minimal()
+library(rms)
+vif(exp_fire_fit)
 ```
 
 ```{r}
-exp_fire_fit_aug <- bind_cols(exp_fire_fit_aug, wildfire_clean |> select(latitude, longitude))
+log_exp_fire_fit <- lm(log(fire_size) ~ region + cause_category + remoteness + 
+                     Vegetation_group + Wind_pre_15 + Prec_pre_15 + 
+                     Temp_pre_15 + Hum_pre_15, data = wildfire_clean)
 
-# Get U.S. mainland map
-us_map <- map_data("state")
+glance(log_exp_fire_fit)
 
-# Plot residuals spatially (filter to mainland)
-ggplot() +
-  geom_polygon(
-    data = us_map,
-    aes(x = long, y = lat, group = group),
-    fill = "white", color = "gray60"
-  ) +
-  geom_point(
-    data = exp_fire_fit_aug |> filter(longitude > -130, longitude < -65, latitude > 24, latitude < 50),
-    aes(x = longitude, y = latitude, color = .resid),
-    size = 1.5, alpha = 0.7
-  ) +
-  scale_color_gradient2(
-    low = "blue", mid = "white", high = "red", midpoint = 0,
-    name = "Residual"
-  ) +
-  coord_fixed(1.3) +
-  labs(
-    title = "Spatial Distribution of Residuals",
-    x = "Longitude",
-    y = "Latitude"
-  ) +
-  theme_minimal()
+log_int_exp_fire_fit <- lm(log(fire_size) ~ region + cause_category + remoteness + 
+                     Vegetation_group * Prec_pre_15 + Wind_pre_15 +
+                     Temp_pre_15 + Hum_pre_15, data = wildfire_clean)
+
+glance(log_int_exp_fire_fit)
 ```
 
 First, as part of our modeling process and to determine which variables to include as predictors of wildfire size, we evaluated multicollinearity among the numeric predictors in our dataset. Specifically, we considered environmental variables measured 15 days prior to fire discovery, including precipitation (`Prec_pre_15`), temperature (`Temp_pre_15`), wind speed (`Wind_pre_15`), and humidity (`Hum_pre_15`), as well as `remoteness`, a scaled measure of distance to the nearest city. These variables were selected because they are directly tied to environmental conditions and are available for most observations. To assess multicollinearity, we used the Variance Inflation Factor (VIF), which quantifies how much the variance of each predictor is inflated due to linear dependence with the others. VIF values greater than 5 were used as a threshold to flag potential multicollinearity concerns. As shown in the output, all five predictors had VIF values well below the threshold of 5: precipitation (1.03), temperature (1.12), wind speed (1.24), humidity (1.39), and remoteness (1.20). These results suggest that there is no problematic multicollinearity among the selected predictors, and all variables were retained for use in the model.
@@ -606,3 +537,238 @@ The adjusted $R^2$ values were low across all models. The main-effects model wit
 We evaluated prediction error using root mean squared error (RMSE) on the log scale. The RMSE was 1.059 for both `fire_main_fit` and `fire_main_bin`, and slightly lower for the interaction models: 1.057 for `fire_int_fit` and 1.058 for `fire_int_bin`. These values indicate that the average prediction error on the log-transformed scale was around 1.06. On the original scale, this corresponds to a multiplicative prediction error of approximately 2.88 (i.e., $\exp(1.06) \approx 2.88$).
 
 Overall, there were minimal differences in adjusted $R^2$ and RMSE between the models using continuous precipitation and those using a binary indicator. The addition of interaction terms with `Vegetation` slightly increased model complexity without meaningfully improving predictive performance.
+
+## Appendix
+
+Std. residuals vs. fitted values - constant variance, linearity, cook's distance (influential points)
+
+```{r}
+#| label: residuals-fitted-vals-plot
+
+exp_fire_fit_aug <- augment(exp_fire_fit)
+
+ggplot(exp_fire_fit_aug, aes(x = .fitted, y = .std.resid, color = .cooksd)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    title = "Standardized Residuals vs. Fitted Values",
+    x = "Fitted Values",
+    y = "Standardized Residuals",
+    color = "Cook's Distance"
+  ) +
+  theme_minimal()
+```
+
+spatial distribution of residuals - independence
+
+```{r}
+#| label: spatial-distribution-residuals
+
+exp_fire_fit_aug <- bind_cols(
+  exp_fire_fit_aug, 
+  wildfire_clean |> 
+    select(latitude, longitude))
+
+us_map <- map_data("state")
+
+ggplot() +
+  geom_polygon(
+    data = us_map,
+    aes(x = long, y = lat, group = group),
+    fill = "white", color = "gray60"
+  ) +
+  geom_point(
+    data = exp_fire_fit_aug |> filter(longitude > -130, longitude < -65, latitude > 24, latitude < 50),
+    aes(x = longitude, y = latitude, color = .resid),
+    size = 1.5, alpha = 0.7
+  ) +
+  scale_color_distiller(
+    palette = "RdBu", direction = 1,
+    name = "Residual", limits = c(min(exp_fire_fit_aug$.resid), max(exp_fire_fit_aug$.resid))
+  ) +
+  coord_fixed(1.3) +
+  labs(
+    title = "Spatial Distribution of Residuals",
+    x = "Longitude",
+    y = "Latitude"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+exp_fire_fit_aug <- augment(exp_fire_fit) |> 
+  mutate(
+    large_resid = if_else(abs(.std.resid) > 3, "Yes", "No"),
+    large_resid = factor(large_resid, levels = c("Yes", "No")),
+    obs_num = row_number()
+  )
+
+ggplot(exp_fire_fit_aug, aes(x = obs_num, y = .std.resid)) +
+  geom_point(aes(color = large_resid), size = 2) + 
+  labs(
+    x = "Observation Number",
+    y = "Standardized Residual",
+    title = "Standardized Residuals by Observation",
+    color = "Large Residual"
+  ) +
+  scale_color_manual(values = c("Yes" = "cadetblue4", "No" = "gray60")) +
+  theme_minimal()
+```
+
+```{r}
+wildfire_clean <- wildfire_clean |> 
+  mutate(disc_clean_date = mdy(disc_clean_date))
+
+exp_fire_fit_aug <- bind_cols(
+  exp_fire_fit_aug,
+  wildfire_clean |> select(disc_clean_date)
+)
+
+ggplot(exp_fire_fit_aug, aes(x = disc_clean_date, y = .resid)) +
+  geom_point(alpha = 0.5, color = "black") +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "Temporal Distribution Residuals Over Time",
+    x = "Discovery Date",
+    y = "Residual"
+  ) +
+  theme_minimal()
+```
+
+large leverage
+
+```{r}
+h_threshold <- 2 * length(coef(exp_fire_fit)) / nrow(exp_fire_fit_aug)
+
+exp_fire_fit_aug <- exp_fire_fit_aug |> 
+  mutate(
+    large_h = if_else(.hat > h_threshold, "Yes", "No"),
+    large_h = factor(large_h, levels = c("Yes", "No"))
+  )
+
+ggplot(exp_fire_fit_aug, aes(x = obs_num, y = .hat)) +
+  geom_point(aes(color = large_h), size = 2) +
+  labs(
+    x = "Observation Number",
+    y = "Leverage",
+    title = "Leverage by Observation",
+    color = "High Leverage"
+  ) +
+  scale_color_manual(values = c("Yes" = "cadetblue4", "No" = "gray60")) +
+  theme_minimal()
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+
+# Remoteness
+ggplot(exp_fire_fit_aug, aes(x = remoteness, y = .resid)) +
+  geom_point(alpha = 0.5) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(x = "Remoteness", y = "Residuals", title = "Residuals vs. Remoteness") +
+  theme_minimal()
+
+# Wind
+ggplot(exp_fire_fit_aug, aes(x = Wind_pre_15, y = .resid)) +
+  geom_point(alpha = 0.5) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(x = "Wind (Pre 15)", y = "Residuals", title = "Residuals vs. Wind") +
+  theme_minimal()
+
+# Temperature
+ggplot(exp_fire_fit_aug, aes(x = Temp_pre_15, y = .resid)) +
+  geom_point(alpha = 0.5) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(x = "Temperature (Pre 15)", y = "Residuals", title = "Residuals vs. Temperature") +
+  theme_minimal()
+
+# Humidity
+ggplot(exp_fire_fit_aug, aes(x = Hum_pre_15, y = .resid)) +
+  geom_point(alpha = 0.5) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(x = "Humidity (Pre 15)", y = "Residuals", title = "Residuals vs. Humidity") +
+  theme_minimal()
+```
+
+```{r}
+# Region
+ggplot(exp_fire_fit_aug, aes(x = region, y = .resid)) +
+  geom_boxplot() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(x = "Region", y = "Residuals", title = "Residuals by Region") +
+  theme_minimal()
+
+# Cause Category
+ggplot(exp_fire_fit_aug, aes(x = cause_category, y = .resid)) +
+  geom_boxplot() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(x = "Cause Category", y = "Residuals", title = "Residuals by Cause") +
+  theme_minimal()
+
+# Vegetation Group
+ggplot(exp_fire_fit_aug, aes(x = Vegetation_group, y = .resid)) +
+  geom_boxplot() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(x = "Vegetation Group", y = "Residuals", title = "Residuals by Vegetation") +
+  theme_minimal()
+
+# Precipitation
+ggplot(exp_fire_fit_aug, aes(x = factor(Prec_pre_15), y = .resid)) +
+  geom_boxplot() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    title = "Residuals by Precipitation",
+    x = "Precipitation (0 = No, 1 = Yes)",
+    y = "Residuals"
+  ) +
+  theme_minimal()
+```
+
+Pairwise plots (if they add value)\
+
+```{r}
+#| label: pairwise-plot-1
+#| echo: false
+#| warning: false
+
+
+ggpairs(
+  wildfire_clean |> 
+    select(fire_mag, Wind_cont, Hum_cont),
+  columnLabels = c(
+    "Fire Intensity",
+    "Wind (m/s)",
+    "Humidity (%)"
+  ),
+  title = "Fire Intensity vs. Wind & Humidity"
+)
+```
+
+```{r}
+#| label: pairwise-plot-2
+#| echo: false
+#| warning: false
+
+ggpairs(
+  wildfire_clean |> 
+    select(Temp_cont, Prec_pre_15, remoteness),
+  columnLabels = c(
+    "Temp (°C)",
+    "Prec. 15d (mm)",
+    "Remote"
+  ),
+  title = "Temperature vs. Precipitation & Remoteness"
+)
+```
+
+We began our analysis by creating pairwise plots to explore relationships between key numerical variables related to fire behavior, environmental conditions, and containment efforts. Since pairwise plots display scatterplots and correlations, we focused on continuous numerical variables that likely impact wildfire dynamics.
+
+For the first pairwise plot, we examined the relationship between fire intensity, wind speed, and humidity. Fire intensity, represented by `fire_mag`, serves as a measure of how severe a wildfire is. Wind speed on the day of containment, `Wind_cont`, is an important factor because stronger winds can accelerate fire spread and make containment efforts more difficult. Humidity on the containment day, `Hum_cont`, was included since higher humidity levels can slow fire spread by increasing moisture in vegetation and the surrounding environment. Analyzing these three variables together provides insight into how atmospheric conditions influence wildfire intensity and containment efforts.
+
+For the second pairwise plot, we selected temperature, precipitation, and remoteness to understand how fire conditions are affected by climate and location. Temperature on the day of containment, `Temp_cont`, plays a significant role because higher temperatures dry out vegetation, creating more favorable conditions for fire spread. Precipitation in the seven days prior to containment, `Prec_pre_15`, is relevant since recent rainfall can increase soil and vegetation moisture, which may reduce fire intensity. The remoteness of a fire’s location, `remoteness`, influences how quickly firefighting resources can reach the site, which can affect containment time. Analysis of these variables allow us to better understand how environmental factors and accessibility impact wildfire behavior.
+
+From our pairwise scatterplots, we observed that many relationships between variables do not follow a clear linear trend. One main observation is the vertical clustering of data points in several scatterplots, where points appear stacked on top of one another at specific values. This pattern is evident in fire intensity versus wind speed and fire intensity versus humidity in the first plot, as well as temperature versus precipitation, temperature versus remoteness, and precipitation versus remoteness in the second plot. This clustering suggests that many of the measurements in our dataset are recorded in discrete increments rather than as continuous values. For example, wind speed and humidity may be rounded to the nearest whole number or recorded at set intervals, leading to apparent groupings in the data. Similarly, precipitation data may be stored as categorical or interval-based values rather than precise continuous measurements. This is an important consideration when preparing the dataset for modeling, as data transformation techniques may need to account for these discrete measurement patterns.
+
+#### 
