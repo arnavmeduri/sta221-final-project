@@ -1,6 +1,6 @@
 ---
-title: "Predicting Total Burned Area of Wildfires Using Environmental and Fire Characteristics"
-author: "Info Innovators - Kevin Mao, Arnav Meduri, Ben Trokenheim, Ricardo Urena"
+title: "Investigating Geographic and Environmental Correlates of Wildfire Size in the United States"
+author: "Info Innovators: Kevin Mao, Arnav Meduri, Ben Trokenheim, Ricardo Urena"
 date: "March 20, 2025"
 format: pdf
 execute: 
@@ -10,11 +10,7 @@ execute:
 editor: visual
 ---
 
-::: callout-important
-Before you submit, make sure your code chunks are turned off with `echo: false` and there are no warnings or messages with `warning: false` and `message: false` in the YAML.Introduction
-:::
-
-## Introduction
+## Introduction and Data
 
 [Project Motivation]{.underline}
 
@@ -77,66 +73,54 @@ wildfire <- read_csv("data/FW_Veg_Rem_Combined.csv")
 #| label: clean-data
 
 wildfire_clean <- wildfire |>
+  select(-(1:2)) |>
   mutate(
     Prec_pre_30 = if_else(Prec_pre_30 == -1, NA_real_, if_else(Prec_pre_30 == 0, 0, 1)),
     Prec_pre_15 = if_else(Prec_pre_15 == -1, NA_real_, if_else(Prec_pre_15 == 0, 0, 1)),
     Prec_pre_7  = if_else(Prec_pre_7  == -1, NA_real_, if_else(Prec_pre_7  == 0, 0, 1)),
     Prec_cont   = if_else(Prec_cont   == -1, NA_real_, if_else(Prec_cont   == 0, 0, 1)),
     putout_time_num = parse_number(putout_time),
-    Vegetation       = factor(Vegetation),
-    fire_size_class  = factor(fire_size_class),
+    Vegetation = factor(Vegetation),
     stat_cause_descr = factor(stat_cause_descr),
-    state            = factor(state),
-    discovery_month  = factor(discovery_month),
-    disc_pre_month   = factor(disc_pre_month),
-    wstation_usaf    = factor(wstation_usaf),
+    state = factor(state),
     region = case_when(
       state %in% c("CT", "ME", "MA", "NH", "RI", "VT", "NJ", "NY", "PA") ~ "Northeast",
       state %in% c("IL", "IN", "MI", "OH", "WI", "IA", "KS", "MN", "MO", 
                    "NE", "ND", "SD") ~ "Midwest",
-      state %in% c("DE", "FL", "GA", "MD", "NC", "SC", "VA", "DC", "WV",
+      state %in% c("DE", "FL", "GA", "MD", "NC", "SC", "VA", "DC", "WV", 
                    "AL", "KY", "MS", "TN", "AR", "LA", "OK", "TX") ~ "South",
-      state %in% c("AZ", "CO", "ID", "MT", "NV", "NM", "UT", "WY",
-                   "AK", "CA", "HI", "OR", "WA") ~ "West",
+      state %in% c("AZ", "CO", "ID", "MT", "NV", "NM", "UT", "WY", "AK", 
+                   "CA", "HI", "OR", "WA") ~ "West",
+      TRUE ~ "Other"
+    ) |> factor(),
+    season = case_when(
+      discovery_month %in% c("Dec", "Jan", "Feb") ~ "Winter",
+      discovery_month %in% c("Mar", "Apr", "May") ~ "Spring",
+      discovery_month %in% c("Jun", "Jul", "Aug") ~ "Summer",
+      discovery_month %in% c("Sep", "Oct", "Nov") ~ "Fall",
+      TRUE ~ NA_character_
+    ) |> factor(),
+    cause_category = case_when(
+      stat_cause_descr == "Lightning" ~ "Natural",
+      stat_cause_descr %in% c("Campfire", "Children", 
+                              "Fireworks", "Smoking") ~ "Recreational",
+      stat_cause_descr == "Debris Burning" ~ "Debris Burning",
+      stat_cause_descr == "Arson" ~ "Arson",
+      stat_cause_descr %in% c("Equipment Use", "Powerline", 
+                              "Railroad", "Structure") ~ "Infrastructure",
+      stat_cause_descr %in% c("Miscellaneous", "Missing/Undefined") ~ "Other/Unknown",
       TRUE ~ "Other"
     ) |> factor()
   ) |>
-  drop_na(
-    fire_mag, stat_cause_descr, Vegetation, remoteness,
-    Prec_pre_15, Hum_pre_7, fire_size, putout_time
-  ) |>
-  filter(
-    fire_size >= quantile(fire_size, 0.25, na.rm = TRUE),
-    fire_size <= quantile(fire_size, 0.75, na.rm = TRUE)
-  )
-```
+  drop_na(fire_mag, stat_cause_descr, Vegetation, remoteness, fire_size, putout_time,
+          Prec_pre_15, Prec_pre_30, Prec_pre_7, Prec_cont,
+          Hum_pre_15, Hum_pre_30, Hum_pre_7, Hum_cont,
+          Temp_pre_15, Temp_pre_30, Temp_pre_7, Temp_cont,
+          Wind_pre_15, Wind_pre_30, Wind_pre_7, Wind_cont) |>
+  filter(fire_size >= quantile(fire_size, 0.25, na.rm = TRUE),
+         fire_size <= quantile(fire_size, 0.75, na.rm = TRUE))
 
-```{r}
-#| label: data-cleaning
-#| echo: false
-#| warning: false
-
-wildfire_clean_50 <- wildfire |> 
-  mutate(
-    Prec_pre_15 = if_else(Prec_pre_15 == -1, NA, Prec_pre_15)
-  ) |> 
-  drop_na(
-    fire_mag, stat_cause_descr, Vegetation, remoteness, 
-    Prec_pre_15, Hum_pre_7, fire_size, putout_time
-  ) |> 
-  mutate(
-    putout_time_num = parse_number(putout_time),
-    Vegetation = factor(Vegetation)
-  ) |> 
-  filter(
-    between(
-      fire_size, 
-      quantile(fire_size, 0.25, na.rm = TRUE), 
-      quantile(fire_size, 0.75, na.rm = TRUE)
-    )
-  )
-
-write_csv(wildfire_clean_50, "data/wildfire_clean_50.csv")
+write_csv(wildfire_clean, "data/wildfire_clean.csv")
 ```
 
 #### Exploratory Data Analysis - Pairwise Plots
@@ -154,7 +138,7 @@ For the second pairwise plot, we selected temperature, precipitation, and remote
 
 
 ggpairs(
-  wildfire_clean_50 |> 
+  wildfire_clean |> 
     select(fire_mag, Wind_cont, Hum_cont),
   columnLabels = c(
     "Fire Intensity",
@@ -171,7 +155,7 @@ ggpairs(
 #| warning: false
 
 ggpairs(
-  wildfire_clean_50 |> 
+  wildfire_clean |> 
     select(Temp_cont, Prec_pre_15, remoteness),
   columnLabels = c(
     "Temp (°C)",
@@ -194,7 +178,7 @@ As part of our univariate EDA, we first analyzed our response variable, `fire_si
 #| warning: false
 
 options(repr.plot.width =1, repr.plot.height = 1)
-ggplot(wildfire_clean_50, aes(x = fire_size)) +
+ggplot(wildfire_clean, aes(x = fire_size)) +
   geom_histogram(fill = "steelblue", color = "white") +
   labs(
     title = "Distribution of Wildfire Sizes",
@@ -207,7 +191,7 @@ ggplot(wildfire_clean_50, aes(x = fire_size)) +
 Next, to better understand the primary causes of wildfires in our dataset, we examined the stat_cause_descr variable, which provides the reported cause for each fire. The most frequently recorded cause was debris burning (2,821), followed by arson (2,399), miscellaneous causes (1,600), and lightning (1,535). Other causes included equipment use (586), campfires (327), children (240), smoking (213), and powerline-related fires (117). A total of 628 fires were labeled as missing or undefined. Interestingly, we found that many of the top causes (e.g., debris burning, arson, and equipment use) are related to human activity.
 
 ```{r}
-ggplot(wildfire_clean_50, aes(y = fct_infreq(stat_cause_descr))) +
+ggplot(wildfire_clean, aes(y = fct_infreq(stat_cause_descr))) +
   geom_bar(fill = "steelblue", color = "white") +
   labs(
     title = "Reported Cause of Wildfires",
@@ -216,21 +200,21 @@ ggplot(wildfire_clean_50, aes(y = fct_infreq(stat_cause_descr))) +
   ) +
   theme_minimal()
 
-wildfire_clean_50 %>%
+wildfire_clean %>%
   count(stat_cause_descr, sort = TRUE)
 ```
 
 ```{r}
 #Vegetation univariate EDA
-table(wildfire_clean_50$Vegetation)
+table(wildfire_clean$Vegetation)
 
-ggplot(wildfire_clean_50, aes(x = Vegetation)) +
+ggplot(wildfire_clean, aes(x = Vegetation)) +
   geom_bar(fill = "#74c476") +
   coord_flip() +
   labs(title = "Frequency of Vegetation Types", x = "Vegetation Type", y = "Count") +
   theme_minimal()
 
-veg_table <- table(wildfire_clean_50$Vegetation)
+veg_table <- table(wildfire_clean$Vegetation)
 veg_percent <- prop.table(veg_table) * 100
 veg_percent
 ```
@@ -246,7 +230,7 @@ The dataset includes 28 distinct vegetation types, each classified by a numerica
 Less common vegetation types represented in the data include desert and temperate evergreen needleleaf forests.
 
 ```{r}
-ggplot(wildfire_clean_50, aes(x = as.factor(Vegetation), y = fire_size)) +
+ggplot(wildfire_clean, aes(x = as.factor(Vegetation), y = fire_size)) +
   geom_boxplot(fill = "steelblue") +
   coord_flip() + 
   labs(
@@ -256,7 +240,7 @@ ggplot(wildfire_clean_50, aes(x = as.factor(Vegetation), y = fire_size)) +
   ) +
   theme_minimal()
 
-wildfire_clean_50 |>
+wildfire_clean |>
   group_by(Vegetation) |>
   summarise(
     count = n(),
@@ -274,8 +258,8 @@ Overall, there is noticeable variation in fire size depending on vegetation type
 
 ```{r}
 #latitude univariate EDA
-summary(wildfire_clean_50$latitude)
-ggplot(wildfire_clean_50, aes(x = latitude)) +
+summary(wildfire_clean$latitude)
+ggplot(wildfire_clean, aes(x = latitude)) +
   geom_histogram(bins = 30, fill = "steelblue", color = "white") +
   labs(
     title = "Distribution of Latitude for Wildfires",
@@ -291,7 +275,7 @@ The distribution of latitudes appears to be centered around the mid-30s to upper
 
 ```{r}
 # bivariate EDA latitude & fire_size
-ggplot(wildfire_clean_50, aes(x = latitude, y = log(fire_size))) +
+ggplot(wildfire_clean, aes(x = latitude, y = log(fire_size))) +
   geom_point(alpha = 0.5, color = "steelblue") +
   geom_smooth(method = "lm", se = FALSE, color = "orange") +  # optional regression line
   labs(
@@ -301,14 +285,14 @@ ggplot(wildfire_clean_50, aes(x = latitude, y = log(fire_size))) +
   ) +
   theme_minimal()
 
-cor(wildfire_clean_50$latitude, wildfire_clean_50$fire_size, use = "complete.obs")
+cor(wildfire_clean$latitude, wildfire_clean$fire_size, use = "complete.obs")
 
 ```
 
 ```{r}
 # univariate EDA for pre_cont_15
-summary(wildfire_clean_50$Prec_pre_15)
-ggplot(wildfire_clean_50, aes(x = Prec_pre_15)) +
+summary(wildfire_clean$Prec_pre_15)
+ggplot(wildfire_clean, aes(x = Prec_pre_15)) +
   geom_histogram(bins = 30, fill = "steelblue", color = "white") +
   labs(
     title = "Distribution of Precipitation (15 Days Prior)",
@@ -324,7 +308,7 @@ The distribution is highly right-skewed, with most fires occurring after little 
 
 ```{r}
 # bivariate EDA for pre_cont_15 and fire_size
-ggplot(wildfire_clean_50, aes(x = Prec_pre_15, y = fire_size)) +
+ggplot(wildfire_clean, aes(x = Prec_pre_15, y = fire_size)) +
   geom_point(alpha = 0.4, color = "steelblue") +
   geom_smooth(method = "lm", se = FALSE, color = "orange") +
   labs(
@@ -334,14 +318,14 @@ ggplot(wildfire_clean_50, aes(x = Prec_pre_15, y = fire_size)) +
   ) +
   theme_minimal()
 
-wildfire_clean_50 <- wildfire_clean_50 %>%
+wildfire_clean <- wildfire_clean %>%
   mutate(precip_bin = case_when(
     Prec_pre_15 <= 0 ~ "0 or less",
     Prec_pre_15 > 0 & Prec_pre_15 <= 10 ~ "0-10mm",
     Prec_pre_15 > 10 ~ "10mm+"
   ))
 
-ggplot(wildfire_clean_50, aes(x = precip_bin, y = fire_size)) +
+ggplot(wildfire_clean, aes(x = precip_bin, y = fire_size)) +
   geom_boxplot(fill = "steelblue") +
   labs(
     title = "Fire Size by Precipitation Bins",
@@ -358,9 +342,9 @@ The boxplot comparing precipitation bins (0 or less, 0-10mm, 10mm+) reveals simi
 
 ```{r}
 # Univariate EDA for Temp_pre_30 Variable
-summary(wildfire_clean_50$Temp_pre_30)
+summary(wildfire_clean$Temp_pre_30)
 
-ggplot(wildfire_clean_50, aes(x = Temp_pre_30)) +
+ggplot(wildfire_clean, aes(x = Temp_pre_30)) +
   geom_histogram(fill = "steelblue", color = "white") +
   labs(
     title = "Distribution of Temperature, 30 Days Prior",
@@ -378,7 +362,7 @@ Looking at the histogram, the data appears to be slgihtly right-skewed, with mos
 
 ```{r}
 #Bivariate EDA for Temp_pre_30 Variable
-ggplot(wildfire_clean_50, aes(x = Temp_pre_30, y = log(fire_size))) +
+ggplot(wildfire_clean, aes(x = Temp_pre_30, y = log(fire_size))) +
   geom_point(alpha = 0.5, color = "steelblue") +
   geom_smooth(method = "lm", se = FALSE, color = "orange") +
   labs(title = "Fire Size vs. Temperature (30 Days Prior)",
@@ -391,8 +375,8 @@ The scatter plot shows the relationship between fire size and temperature 30 day
 
 ```{r}
 # Univariate EDA for Remoteness Variable
-summary(wildfire_clean_50$remoteness)
-ggplot(wildfire_clean_50, aes(x = remoteness)) +
+summary(wildfire_clean$remoteness)
+ggplot(wildfire_clean, aes(x = remoteness)) +
   geom_histogram(fill = "steelblue", color = "white") +
   labs(
     title = "Distribution of Remoteness",
@@ -412,7 +396,7 @@ Looking at the histogram, the distribution is right-skewed, with most observatio
 
 ```{r}
 #Bivariate 
-ggplot(wildfire_clean_50, aes(x = remoteness, y = fire_size)) +
+ggplot(wildfire_clean, aes(x = remoteness, y = fire_size)) +
   geom_point(color = "steelblue") +
   geom_smooth(method = "lm", se = FALSE, color = "orange") +
   labs(title = "Fire Size vs. Remoteness",
@@ -428,21 +412,21 @@ The scatter plot illustrates the relationship between fire size and remoteness. 
 This plot shows the distribution of wildfire sizes across different vegetation types, which represent the dominant land cover where each fire occurred. The median fire size is relatively consistent across most vegetation types, typically falling between 5 and 10 acres. However, certain vegetation categories show greater variability in fire size, particularly type 0 (i.e., Other), type 12 (i.e., Open Shrubland), and type 16 (i.e., Secondary Tropical Evergreen Broadleaf Forest). Additionally, nearly all vegetation types include significant outliers (i.e., fires extending beyond 40 acres). This suggests that while typical fire behavior is similar across land cover types, variability still exists in more extreme cases.
 
 ```{r}
-ggplot(wildfire_clean_50, aes(x = factor(Vegetation), y = fire_size, color = factor(Vegetation))) +
+ggplot(wildfire_clean, aes(x = factor(Vegetation), y = fire_size, color = factor(Vegetation))) +
   geom_boxplot() +
   labs(
     title = "Wildfire Size by Vegetation Type",
     x = "Vegetation Type (coded)",
     y = "Fire Size (acres)"
   ) +
-  scale_color_manual(values = colorRampPalette(c("#a3c9a8", "#2e7d32"))(length(unique(wildfire_clean_50$Vegetation)))) +
+  scale_color_manual(values = colorRampPalette(c("#a3c9a8", "#2e7d32"))(length(unique(wildfire_clean$Vegetation)))) +
   theme_minimal() +
   theme(legend.position = "none")
 ```
 
 ```{r}
 
-ggplot(wildfire_clean_50, aes(x = Prec_pre_15, y = log(fire_size), color = Vegetation)) +
+ggplot(wildfire_clean, aes(x = Prec_pre_15, y = log(fire_size), color = Vegetation)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, color = "steelblue") +
   labs(title = "Fire Size vs. Precipitation (15 Days Prior)",
@@ -458,6 +442,18 @@ This figure suggests that the relationship between precipitation (15 days prior)
 
 ## Methodology
 
+**Model - Explainability (Forward Selection using Adj. R\^2)**
+
+```{r}
+
+fire_size_fit <- lm(fire_size ~ region + cause_category + remoteness + putout_time_num +
+              Wind_pre_15 + Hum_pre_15 + Temp_pre_15 + Prec_pre_15, data = wildfire_clean)
+
+tidy(fire_size_fit)
+
+glance(fire_size_fit)
+```
+
 First, as part of our modeling process and to determine which variables to include as predictors of wildfire size, we evaluated multicollinearity among the numeric predictors in our dataset. Specifically, we considered environmental variables measured 15 days prior to fire discovery, including precipitation (`Prec_pre_15`), temperature (`Temp_pre_15`), wind speed (`Wind_pre_15`), and humidity (`Hum_pre_15`), as well as `remoteness`, a scaled measure of distance to the nearest city. These variables were selected because they are directly tied to environmental conditions and are available for most observations. To assess multicollinearity, we used the Variance Inflation Factor (VIF), which quantifies how much the variance of each predictor is inflated due to linear dependence with the others. VIF values greater than 5 were used as a threshold to flag potential multicollinearity concerns. As shown in the output, all five predictors had VIF values well below the threshold of 5: precipitation (1.03), temperature (1.12), wind speed (1.24), humidity (1.39), and remoteness (1.20). These results suggest that there is no problematic multicollinearity among the selected predictors, and all variables were retained for use in the model.
 
 ```{r}
@@ -467,7 +463,7 @@ wildfire_vif_fit <- lm(fire_size ~ Prec_pre_15 +
                                  Wind_pre_15 +
                                  Hum_pre_15 +
                                  remoteness,
-                       data = wildfire_clean_50)
+                       data = wildfire_clean)
 
 vif(wildfire_vif_fit)
 ```
@@ -481,9 +477,9 @@ The adjusted $R^{2}$ values for the models were low: 0.037 for the main-effects 
 To evaluate predictive accuracy, we computed the root mean squared error (RMSE) for both models using the log-transformed fire size. RMSE represents the average difference between the observed and predicted values on the log scale. The main-effects model had an RMSE of approximately 1.06, and the interaction model had a nearly identical RMSE of 1.059. These values indicate that, on average, the predicted log fire sizes differed from the observed values by about 1.057 log-units. Because the models are fit on a logarithmic scale, an error of this magnitude corresponds to a multiplicative factor of roughly 2.7 on the original fire size scale (in acres).
 
 ```{r}
-fire_main_fit <- lm(log(fire_size) ~ remoteness + log(Prec_pre_15 + 0.001) + Temp_pre_15 + Vegetation + stat_cause_descr + Wind_cont, data = wildfire_clean_50)
+fire_main_fit <- lm(log(fire_size) ~ remoteness + log(Prec_pre_15 + 0.001) + Temp_pre_15 + Vegetation + stat_cause_descr + Wind_cont, data = wildfire_clean)
 
-fire_int_fit <- lm(log(fire_size) ~ remoteness + Temp_pre_15 + log(Prec_pre_15 + 0.001) * Vegetation + stat_cause_descr + Wind_cont, data = wildfire_clean_50)
+fire_int_fit <- lm(log(fire_size) ~ remoteness + Temp_pre_15 + log(Prec_pre_15 + 0.001) * Vegetation + stat_cause_descr + Wind_cont, data = wildfire_clean)
 
 tidy(fire_main_fit) |> 
   kable(digits = 3)
@@ -496,10 +492,10 @@ glance(fire_int_fit)$adj.r.squared
 
 
 # Augment the model results with fitted values
-main_aug <- augment(fire_main_fit, data = wildfire_clean_50) |>
+main_aug <- augment(fire_main_fit, data = wildfire_clean) |>
   mutate(truth = log(fire_size), estimate = .fitted)
 
-int_aug <- augment(fire_int_fit, data = wildfire_clean_50) |>
+int_aug <- augment(fire_int_fit, data = wildfire_clean) |>
   mutate(truth = log(fire_size), estimate = .fitted)
 
 # Compute RMSE using yardstick
@@ -518,26 +514,26 @@ library(dplyr)
 library(broom)
 library(yardstick)
 
-wildfire_clean_50 <- wildfire_clean_50 %>%
+wildfire_clean <- wildfire_clean %>%
   mutate(precip_indicator = ifelse(Prec_pre_15 > 0, 1, 0))
 
 fire_main_bin <- lm(log(fire_size) ~ remoteness + precip_indicator +
                                  Temp_pre_15 + Vegetation +
                                  stat_cause_descr + Wind_cont,
-                    data = wildfire_clean_50)
+                    data = wildfire_clean)
 
 fire_int_bin <- lm(log(fire_size) ~ remoteness + Temp_pre_15 +
                                 precip_indicator * Vegetation +
                                 stat_cause_descr + Wind_cont,
-                   data = wildfire_clean_50)
+                   data = wildfire_clean)
 
 glance(fire_main_bin)$adj.r.squared
 glance(fire_int_bin)$adj.r.squared
 
-main_bin_aug <- augment(fire_main_bin, data = wildfire_clean_50) %>%
+main_bin_aug <- augment(fire_main_bin, data = wildfire_clean) %>%
   mutate(truth = log(fire_size), estimate = .fitted)
 
-int_bin_aug <- augment(fire_int_bin, data = wildfire_clean_50) %>%
+int_bin_aug <- augment(fire_int_bin, data = wildfire_clean) %>%
   mutate(truth = log(fire_size), estimate = .fitted)
 
 rmse(main_bin_aug, truth = truth, estimate = estimate)
