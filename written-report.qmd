@@ -1,5 +1,5 @@
 ---
-title: "Investigating Geographic and Environmental Correlates of Wildfire Size in the United States"
+title: "Investigating Factors Associated with Wildfire Burn Area in the United States"
 author: "Info Innovators: Kevin Mao, Arnav Meduri, Ben Trokenheim, Ricardo Urena"
 date: "March 20, 2025"
 format: pdf
@@ -118,7 +118,10 @@ wildfire_clean <- wildfire |>
           Temp_pre_15, Temp_pre_30, Temp_pre_7, Temp_cont,
           Wind_pre_15, Wind_pre_30, Wind_pre_7, Wind_cont) |>
   filter(fire_size >= quantile(fire_size, 0.25, na.rm = TRUE),
-         fire_size <= quantile(fire_size, 0.75, na.rm = TRUE))
+         fire_size <= quantile(fire_size, 0.75, na.rm = TRUE)) |>
+  mutate(
+    mid50_hi = if_else(fire_size > median(fire_size, na.rm = TRUE), 1, 0)
+  )
 
 write_csv(wildfire_clean, "data/wildfire_clean.csv")
 ```
