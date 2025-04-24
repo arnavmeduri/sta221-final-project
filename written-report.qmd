@@ -102,23 +102,33 @@ wildfire_clean <- wildfire |>
     ) |> factor(),
     cause_category = case_when(
       stat_cause_descr == "Lightning" ~ "Natural",
-      stat_cause_descr %in% c("Campfire", "Children", 
-                              "Fireworks", "Smoking") ~ "Recreational",
+      stat_cause_descr %in% c("Campfire", "Children", "Fireworks", "Smoking") ~ "Recreational",
       stat_cause_descr == "Debris Burning" ~ "Debris Burning",
       stat_cause_descr == "Arson" ~ "Arson",
-      stat_cause_descr %in% c("Equipment Use", "Powerline", 
-                              "Railroad", "Structure") ~ "Infrastructure",
+      stat_cause_descr %in% c("Equipment Use", "Powerline", "Railroad", "Structure") ~ "Infrastructure",
       stat_cause_descr %in% c("Miscellaneous", "Missing/Undefined") ~ "Other/Unknown",
+      TRUE ~ "Other"
+    ) |> factor(),
+    Vegetation_group = case_when(
+      Vegetation %in% c(0, 9) ~ "Tundra/Barren",         
+      Vegetation %in% c(4, 5, 6, 7) ~ "Grassland",        
+      Vegetation %in% c(10, 11, 12) ~ "Shrubland",        
+      Vegetation %in% c(13, 14, 15, 16) ~ "Forest",       
+      Vegetation %in% c(1, 2, 3, 8) ~ "Wetland/Other",    
       TRUE ~ "Other"
     ) |> factor()
   ) |>
-  drop_na(fire_mag, stat_cause_descr, Vegetation, remoteness, fire_size, putout_time,
-          Prec_pre_15, Prec_pre_30, Prec_pre_7, Prec_cont,
-          Hum_pre_15, Hum_pre_30, Hum_pre_7, Hum_cont,
-          Temp_pre_15, Temp_pre_30, Temp_pre_7, Temp_cont,
-          Wind_pre_15, Wind_pre_30, Wind_pre_7, Wind_cont) |>
-  filter(fire_size >= quantile(fire_size, 0.25, na.rm = TRUE),
-         fire_size <= quantile(fire_size, 0.75, na.rm = TRUE)) |>
+  drop_na(
+    fire_mag, stat_cause_descr, Vegetation, remoteness, fire_size, putout_time,
+    Prec_pre_15, Prec_pre_30, Prec_pre_7, Prec_cont,
+    Hum_pre_15, Hum_pre_30, Hum_pre_7, Hum_cont,
+    Temp_pre_15, Temp_pre_30, Temp_pre_7, Temp_cont,
+    Wind_pre_15, Wind_pre_30, Wind_pre_7, Wind_cont
+  ) |>
+  filter(
+    fire_size >= quantile(fire_size, 0.25, na.rm = TRUE),
+    fire_size <= quantile(fire_size, 0.75, na.rm = TRUE)
+  ) |>
   mutate(
     mid50_hi = if_else(fire_size > median(fire_size, na.rm = TRUE), 1, 0)
   )
@@ -445,16 +455,60 @@ This figure suggests that the relationship between precipitation (15 days prior)
 
 ## Methodology
 
-**Model - Explainability (Forward Selection using Adj. R\^2)**
-
 ```{r}
 
-fire_size_fit <- lm(fire_size ~ region + cause_category + remoteness + putout_time_num +
-              Wind_pre_15 + Hum_pre_15 + Temp_pre_15 + Prec_pre_15, data = wildfire_clean)
+#| label: linear-model
 
-tidy(fire_size_fit)
+exp_fire_fit <- lm(fire_size ~ region + cause_category + remoteness + Vegetation_group +
+                     Wind_pre_15 + Temp_pre_15 + Hum_pre_15, data = wildfire_clean)
 
-glance(fire_size_fit)
+glance(exp_fire_fit)
+```
+
+```{r}
+#| label: residuals-fitted-vals-plot
+
+exp_fire_fit_aug <- augment(exp_fire_fit)
+
+ggplot(exp_fire_fit_aug, aes(x = .fitted, y = .resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    x = "Fitted Values",
+    y = "Residuals"
+    ) +
+  theme_minimal()
+```
+
+```{r}
+exp_fire_fit_aug <- bind_cols(exp_fire_fit_aug, wildfire_clean |> select(latitude, longitude))
+
+# Get U.S. mainland map
+us_map <- map_data("state")
+
+# Plot residuals spatially (filter to mainland)
+ggplot() +
+  geom_polygon(
+    data = us_map,
+    aes(x = long, y = lat, group = group),
+    fill = "white", color = "gray60"
+  ) +
+  geom_point(
+    data = exp_fire_fit_aug |> filter(longitude > -130, longitude < -65, latitude > 24, latitude < 50),
+    aes(x = longitude, y = latitude, color = .resid),
+    size = 1.5, alpha = 0.7
+  ) +
+  scale_color_gradient2(
+    low = "blue", mid = "white", high = "red", midpoint = 0,
+    name = "Residual"
+  ) +
+  coord_fixed(1.3) +
+  labs(
+    title = "Spatial Distribution of Residuals",
+    x = "Longitude",
+    y = "Latitude"
+  ) +
+  theme_minimal()
 ```
 
 First, as part of our modeling process and to determine which variables to include as predictors of wildfire size, we evaluated multicollinearity among the numeric predictors in our dataset. Specifically, we considered environmental variables measured 15 days prior to fire discovery, including precipitation (`Prec_pre_15`), temperature (`Temp_pre_15`), wind speed (`Wind_pre_15`), and humidity (`Hum_pre_15`), as well as `remoteness`, a scaled measure of distance to the nearest city. These variables were selected because they are directly tied to environmental conditions and are available for most observations. To assess multicollinearity, we used the Variance Inflation Factor (VIF), which quantifies how much the variance of each predictor is inflated due to linear dependence with the others. VIF values greater than 5 were used as a threshold to flag potential multicollinearity concerns. As shown in the output, all five predictors had VIF values well below the threshold of 5: precipitation (1.03), temperature (1.12), wind speed (1.24), humidity (1.39), and remoteness (1.20). These results suggest that there is no problematic multicollinearity among the selected predictors, and all variables were retained for use in the model.
