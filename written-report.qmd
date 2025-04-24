@@ -143,70 +143,90 @@ write_csv(wildfire_clean, "data/wildfire_clean.csv")
 As part of our univariate EDA, we first analyzed our response variable, `fire_size`, to understand its distribution and variability. Based on the histogram below, the distribution of fire size in our dataset appears to be right-skewed and unimodal. (As we can see in the histogram, the distribution has a long right tail, which indicates that while most wildfires in the dataset are relatively small, a smaller number of larger fires extend the range and pull the mean fire size to the right.) Only the middle 50% (IQR) of wildfires are shown in this histogram to focus on moderate-sized fires that are more relevant for management and containment strategies. Even within this subset, there is a clear peak around a frequency of \~4000 for wildfires that burn less than 1-2 acres of land.
 
 ```{r}
-#| label: fire-size-distribution
+#| label: fire-size-dist
 #| echo: false
 #| warning: false
 
-options(repr.plot.width =1, repr.plot.height = 1)
 ggplot(wildfire_clean, aes(x = fire_size)) +
-  geom_histogram(fill = "cadetblue4", color = "white") +
+  geom_histogram(fill = "cadetblue4", color = "white", alpha = 0.8) +
   labs(
-    title = "Distribution of Burned Area of Wildfires",
-    x = "Fire size (acres)",
+    title = "Distribution of Burned Area of Wildfires", 
+    x = "Burned Area (acres)",
     y = "Frequency"
   ) +
   theme_minimal()
 ```
 
-Next, to better understand the primary causes of wildfires in our dataset, we examined the stat_cause_descr variable, which provides the reported cause for each fire. The most frequently recorded cause was debris burning (2,821), followed by arson (2,399), miscellaneous causes (1,600), and lightning (1,535). Other causes included equipment use (586), campfires (327), children (240), smoking (213), and powerline-related fires (117). A total of 628 fires were labeled as missing or undefined. Interestingly, we found that many of the top causes (e.g., debris burning, arson, and equipment use) are related to human activity.
-
 ```{r}
-ggplot(wildfire_clean, aes(y = fct_infreq(cause_category))) +
-  geom_bar(fill = "cadetblue4", color = "white") +
+#| label: temp-dist
+#| echo: false
+#| warning: false
+
+ggplot(wildfire_clean, aes(x = Temp_pre_15)) +
+  geom_histogram(fill = "cadetblue4", color = "white", alpha = 0.8) +
   labs(
-    title = "Reported Cause of Wildfires",
-    y = "Cause of Fire",
-    x = "Count"
+    title = "Distribution of Temperature",
+    x = "Temperature (°C)",
+    y = "Frequency"
   ) +
   theme_minimal()
-
-wildfire_clean %>%
-  count(stat_cause_descr, sort = TRUE)
 ```
 
 ```{r}
-#Vegetation univariate EDA
-table(wildfire_clean$Vegetation)
+#| label: humidity-dist
+#| echo: false
+#| warning: false
 
-ggplot(wildfire_clean, aes(x = Vegetation)) +
-  geom_bar(fill = "#74c476") +
-  coord_flip() +
-  labs(title = "Frequency of Vegetation Types", x = "Vegetation Type", y = "Count") +
-  theme_minimal()
-
-veg_table <- table(wildfire_clean$Vegetation)
-veg_percent <- prop.table(veg_table) * 100
-veg_percent
-```
-
-The dataset includes 28 distinct vegetation types, each classified by a numerical code. Among these, a few vegetation types dominate the data. The most frequently occurring types are:
-
--   Open Shrubland (code 12) with 3,763 observations (about 26% of the dataset)
-
--   Secondary Tropical Evergreen Broadleaf Forest (code 16) with 3,653 observations (about 26%)
-
--   Polar Desert/Rock/Ice (code 15) with 3,081 observations (about 22%)
-
-Less common vegetation types represented in the data include desert and temperate evergreen needleleaf forests.
-
-```{r}
-ggplot(wildfire_clean, aes(x = as.factor(Vegetation), y = fire_size)) +
-  geom_boxplot(fill = "steelblue") +
-  coord_flip() + 
+ggplot(wildfire_clean, aes(x = Hum_pre_15)) +
+  geom_histogram(fill = "cadetblue4", color = "white", alpha = 0.8) +
   labs(
-    title = "Fire Size by Vegetation Type",
-    x = "Vegetation Type",
-    y = "Fire Size (acres)"
+    title = "Distribution of Relative Humidity",
+    x = "Relative Humidity (%)",
+    y = "Frequency"
+  ) +
+  theme_minimal()
+```
+
+The variable remoteness, which represents the non-dimensional distance to the closest city, has a distribution ranging from 0.0000 to 0.98899. The minimum value of 0 suggests that some fires occurred basically within cities, while the maximum value of 1 indicating the farthest fire away. However, the fire with value of 1 in remoteness may have been removed when we cleaned the data.
+
+The first quartile of 0.1450 means that 25% of the fires occurred in areas where remoteness was relatively low, suggesting proximity to cities or towns. The median value of 0.2002 indicates that half of the fires took place in areas with remoteness below this threshold, meaning that most fires are moderately close to urban areas rather than in extremely remote locations. However, the mean value of 0.2403 is slightly higher than the median, which suggests that the distribution is right-skewed, meaning that a small number of fires occurred in highly remote areas, pulling the average upward. This skewness is further confirmed by the third quartile (Q3) of 0.3018, showing that 75% of fires occurred in areas with remoteness below this level, while the remaining 25% took place in much more remote regions.
+
+This distribution suggests that most fires tend to occur closer to urban areas rather than in extremely remote locations, but a minority of cases involve fires in highly remote regions.
+
+Looking at the histogram, the distribution is right-skewed, with most observations between 0.1 and 0.3. There is a sharp peak around 0.15, however, indicating that this is about the area most fires occur. As remoteness increases beyond 0.5, the frequency of observations declines significantly, meaning very few fires occurring in extremely remote areas.
+
+```{r}
+#| label: remoteness-dist
+#| echo: false
+#| warning: false
+
+ggplot(wildfire_clean, aes(x = remoteness)) +
+  geom_histogram(fill = "cadetblue4", color = "white", alpha = 0.8) +
+  labs(
+    title = "Distribution of Remoteness",
+    x = "Remoteness",
+    y = "Frequency"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#| label: cause-dist
+#| echo: false
+#| warning: false
+
+ggplot(data = wildfire_clean, aes(x = cause_category, y = fire_size, color = cause_category)) +
+  geom_boxplot(fill = NA) +
+  scale_color_manual(
+    values = colorRampPalette(c("#8FBC8F", "cadetblue4"))(
+      length(unique(wildfire_clean$cause_category))
+    )
+  ) +
+  labs(
+    title = "Distribution of Burned Area of Wildfires by Cause Category",
+    x = "",
+    y = "Burned Area (acres)",
+    color = "Cause Category"
   ) +
   theme_minimal()
 
@@ -216,7 +236,7 @@ wildfire_clean |>
     count = n(),
     mean_fire_size = mean(fire_size, na.rm = TRUE),
     median_fire_size = median(fire_size, na.rm = TRUE)
-  ) %>%
+  ) |>
   arrange(desc(mean_fire_size))
 ```
 
@@ -227,21 +247,88 @@ Vegetation types 12 and 16 also exhibit relatively high median fire sizes (both 
 Overall, there is noticeable variation in fire size depending on vegetation type. Some vegetation types appear to be more prone to larger fires, which could be due to factors like fuel availability or vegetation density.
 
 ```{r}
-#latitude univariate EDA
-summary(wildfire_clean$latitude)
-ggplot(wildfire_clean, aes(x = latitude)) +
-  geom_histogram(bins = 30, fill = "steelblue", color = "white") +
+#| label: season-dist
+#| echo: false
+#| warning: false
+
+ggplot(data = wildfire_clean, 
+       aes(x = season, y = fire_size, color = season)) +
+  geom_boxplot(fill = NA) +
+  scale_color_manual(
+    values = colorRampPalette(c("#8FBC8F", "cadetblue4"))(
+      length(unique(wildfire_clean$season))
+    )
+  ) +
   labs(
-    title = "Distribution of Latitude for Wildfires",
-    x = "Latitude",
-    y = "Frequency"
+    title = "Distribution of Burned Area of Wildfires by Season",
+    subtitle = "Burned area (in acres) across seasons of fire discovery",
+    x = "Season",
+    y = "Burned Area (acres)",
+    color = "Season"
   ) +
   theme_minimal()
 ```
 
-The latitude of wildfires in the dataset ranges from 17.98° to 69.26°, with a median of 34.84° and a mean of 36.62°. The middle 50% of the data falls between 32.85° and 39.93°, suggesting that most wildfires occur in mid-latitude regions of the United States. This range corresponds to areas that commonly experience wildfires, such as parts of California and other western states.
+```{r}
+#| label: vegetation-dist
+#| echo: false
+#| warning: false
 
-The distribution of latitudes appears to be centered around the mid-30s to upper-30s, which may reflect the concentration of fire-prone areas in those geographic zones.
+ggplot(data = wildfire_clean, 
+       aes(x = Vegetation_group, y = fire_size, color = Vegetation_group)) +
+  geom_boxplot(fill = NA) +
+  scale_color_manual(
+    values = colorRampPalette(c("#8FBC8F", "cadetblue4"))(
+      length(unique(wildfire_clean$Vegetation_group))
+    )
+  ) +
+  labs(
+    title = "Distribution of Burned Area of Wildfires by Vegetation Group",
+    subtitle = "Burned area (in acres) across dominant vegetation categories",
+    x = "Vegetation Group",
+    y = "Burned Area (acres)",
+    color = "Vegetation Group"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+ggplot(data = wildfire_clean, 
+       aes(x = region, y = fire_size, color = region)) +
+  geom_boxplot(fill = NA) +
+  scale_color_manual(
+    values = colorRampPalette(c("#8FBC8F", "cadetblue4"))(
+      length(unique(wildfire_clean$region))
+    )
+  ) +
+  labs(
+    title = "Distribution of Burned Area of Wildfires by Region",
+    subtitle = "Burned area (in acres) across geographic regions",
+    x = "Region",
+    y = "Burned Area (acres)",
+    color = "Region"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+ggplot(
+  data = wildfire_clean,
+  aes(x = factor(Prec_pre_15, levels = c(0, 1), labels = c("No Precipitation", "Precipitation")),
+      y = fire_size,
+      color = factor(Prec_pre_15, levels = c(0, 1), labels = c("No Precipitation", "Precipitation")))
+) +
+  geom_boxplot(fill = NA) +
+  scale_color_manual(values = vegetation_palette[1:2]) +
+  labs(
+    title = "Wildfire Burned Area by 15-Day Precipitation Status",
+    subtitle = "Burned area (in acres) grouped by precipitation presence 15 days prior to fire discovery",
+    x = "Precipitation 15 Days Before Discovery",
+    y = "Burned Area (acres)",
+    color = "Precipitation"
+  ) +
+  theme_minimal()
+```
 
 ```{r}
 # bivariate EDA latitude & fire_size
@@ -344,27 +431,6 @@ ggplot(wildfire_clean, aes(x = Temp_pre_30, y = log(fire_size))) +
 The scatter plot shows the relationship between fire size and temperature 30 days prior, with little evidence of a strong correlation. The nearly flat regression line suggests that temperature alone is not a key predictor of fire size. Most fires occurred between 0°C and 25°C, with fire sizes clustered at lower values. There also does seem to be a large amount of fires that are recorded at 20, 30, 40, and 50 acres for fire size indicating that many of these may have been rounded. 
 
 ```{r}
-# Univariate EDA for Remoteness Variable
-summary(wildfire_clean$remoteness)
-ggplot(wildfire_clean, aes(x = remoteness)) +
-  geom_histogram(fill = "steelblue", color = "white") +
-  labs(
-    title = "Distribution of Remoteness",
-    x = "remoteness",
-    y = "Frequency"
-  ) +
-  theme_minimal()
-```
-
-The variable remoteness, which represents the non-dimensional distance to the closest city, has a distribution ranging from 0.0000 to 0.98899. The minimum value of 0 suggests that some fires occurred basically within cities, while the maximum value of 1 indicating the farthest fire away. However, the fire with value of 1 in remoteness may have been removed when we cleaned the data.
-
-The first quartile of 0.1450 means that 25% of the fires occurred in areas where remoteness was relatively low, suggesting proximity to cities or towns. The median value of 0.2002 indicates that half of the fires took place in areas with remoteness below this threshold, meaning that most fires are moderately close to urban areas rather than in extremely remote locations. However, the mean value of 0.2403 is slightly higher than the median, which suggests that the distribution is right-skewed, meaning that a small number of fires occurred in highly remote areas, pulling the average upward. This skewness is further confirmed by the third quartile (Q3) of 0.3018, showing that 75% of fires occurred in areas with remoteness below this level, while the remaining 25% took place in much more remote regions.
-
-This distribution suggests that most fires tend to occur closer to urban areas rather than in extremely remote locations, but a minority of cases involve fires in highly remote regions.
-
-Looking at the histogram, the distribution is right-skewed, with most observations between 0.1 and 0.3. There is a sharp peak around 0.15, however, indicating that this is about the area most fires occur. As remoteness increases beyond 0.5, the frequency of observations declines significantly, meaning very few fires occurring in extremely remote areas.
-
-```{r}
 #Bivariate 
 ggplot(wildfire_clean, aes(x = remoteness, y = fire_size)) +
   geom_point(color = "steelblue") +
@@ -413,12 +479,11 @@ This figure suggests that the relationship between precipitation (15 days prior)
 ## Methodology
 
 ```{r}
-
 #| label: linear-model
 
 exp_fire_fit <- lm(fire_size ~ region + cause_category + remoteness + 
-                     Vegetation_group + Wind_pre_15 + Prec_pre_15 + 
-                     Temp_pre_15 + Hum_pre_15, data = wildfire_clean)
+                     Vegetation_group + Wind_pre_30 + Prec_pre_30 + 
+                     Temp_pre_30 + Hum_pre_30, data = wildfire_clean)
 
 glance(exp_fire_fit)
 ```
@@ -604,14 +669,14 @@ exp_fire_fit_aug <- augment(exp_fire_fit) |>
   )
 
 ggplot(exp_fire_fit_aug, aes(x = obs_num, y = .std.resid)) +
-  geom_point(aes(color = large_resid), size = 2) + 
+  geom_point(aes(color = large_resid), size = 2, alpha = 0.7) + 
   labs(
     x = "Observation Number",
     y = "Standardized Residual",
     title = "Standardized Residuals by Observation",
     color = "Large Residual"
   ) +
-  scale_color_manual(values = c("Yes" = "cadetblue4", "No" = "gray60")) +
+  scale_color_manual(values = c("Yes" = "cadetblue4", "No" = "gray50")) +
   theme_minimal()
 ```
 
@@ -625,10 +690,9 @@ exp_fire_fit_aug <- bind_cols(
 )
 
 ggplot(exp_fire_fit_aug, aes(x = disc_clean_date, y = .resid)) +
-  geom_point(alpha = 0.5, color = "black") +
-  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  geom_point() +
   labs(
-    title = "Temporal Distribution Residuals Over Time",
+    title = "Residuals vs. Discovery Date",
     x = "Discovery Date",
     y = "Residual"
   ) +
@@ -729,6 +793,7 @@ ggplot(exp_fire_fit_aug, aes(x = factor(Prec_pre_15), y = .resid)) +
 Pairwise plots (if they add value)\
 
 ```{r}
+{r}
 #| label: pairwise-plot-1
 #| echo: false
 #| warning: false
@@ -771,4 +836,59 @@ For the second pairwise plot, we selected temperature, precipitation, and remote
 
 From our pairwise scatterplots, we observed that many relationships between variables do not follow a clear linear trend. One main observation is the vertical clustering of data points in several scatterplots, where points appear stacked on top of one another at specific values. This pattern is evident in fire intensity versus wind speed and fire intensity versus humidity in the first plot, as well as temperature versus precipitation, temperature versus remoteness, and precipitation versus remoteness in the second plot. This clustering suggests that many of the measurements in our dataset are recorded in discrete increments rather than as continuous values. For example, wind speed and humidity may be rounded to the nearest whole number or recorded at set intervals, leading to apparent groupings in the data. Similarly, precipitation data may be stored as categorical or interval-based values rather than precise continuous measurements. This is an important consideration when preparing the dataset for modeling, as data transformation techniques may need to account for these discrete measurement patterns.
 
-#### 
+```{r}
+ggplot(wildfire_clean, aes(x = fct_infreq(cause_category))) +
+  geom_bar(fill = "cadetblue4", color = "white") +
+  labs(
+    title = "Reported Cause of Wildfires",
+    y = "Cause of Fire",
+    x = "Count"
+  ) +
+  theme_minimal()
+
+wildfire_clean %>%
+  count(stat_cause_descr, sort = TRUE)
+```
+
+Next, to better understand the primary causes of wildfires in our dataset, we examined the stat_cause_descr variable, which provides the reported cause for each fire. The most frequently recorded cause was debris burning (2,821), followed by arson (2,399), miscellaneous causes (1,600), and lightning (1,535). Other causes included equipment use (586), campfires (327), children (240), smoking (213), and powerline-related fires (117). A total of 628 fires were labeled as missing or undefined. Interestingly, we found that many of the top causes (e.g., debris burning, arson, and equipment use) are related to human activity.
+
+The dataset includes 28 distinct vegetation types, each classified by a numerical code. Among these, a few vegetation types dominate the data. The most frequently occurring types are:
+
+-   Open Shrubland (code 12) with 3,763 observations (about 26% of the dataset)
+
+-   Secondary Tropical Evergreen Broadleaf Forest (code 16) with 3,653 observations (about 26%)
+
+-   Polar Desert/Rock/Ice (code 15) with 3,081 observations (about 22%)
+
+Less common vegetation types represented in the data include desert and temperate evergreen needleleaf forests.
+
+```{r}
+table(wildfire_clean$Vegetation)
+
+ggplot(wildfire_clean, aes(x = Vegetation)) +
+  geom_bar(fill = "#74c476") +
+  coord_flip() +
+  labs(title = "Frequency of Vegetation Types", x = "Vegetation Type", y = "Count") +
+  theme_minimal()
+
+veg_table <- table(wildfire_clean$Vegetation)
+veg_percent <- prop.table(veg_table) * 100
+veg_percent
+```
+
+```{r}
+#latitude univariate EDA
+summary(wildfire_clean$latitude)
+ggplot(wildfire_clean, aes(x = latitude)) +
+  geom_histogram(bins = 30, fill = "steelblue", color = "white") +
+  labs(
+    title = "Distribution of Latitude for Wildfires",
+    x = "Latitude",
+    y = "Frequency"
+  ) +
+  theme_minimal()
+```
+
+The latitude of wildfires in the dataset ranges from 17.98° to 69.26°, with a median of 34.84° and a mean of 36.62°. The middle 50% of the data falls between 32.85° and 39.93°, suggesting that most wildfires occur in mid-latitude regions of the United States. This range corresponds to areas that commonly experience wildfires, such as parts of California and other western states.
+
+The distribution of latitudes appears to be centered around the mid-30s to upper-30s, which may reflect the concentration of fire-prone areas in those geographic zones.
