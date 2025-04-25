@@ -1,5 +1,5 @@
 ---
-title: "Analyzing Factors Associated with Wildfire Size in the United States"
+title: "Analyzing Factors Associated with Wildfire Burned Area in the United States"
 author: "Info Innovators: Kevin Mao, Arnav Meduri, Ben Trokenheim, Ricardo Urena"
 date: "March 20, 2025"
 format: pdf
@@ -151,7 +151,10 @@ ggplot(wildfire_clean, aes(x = fire_size)) +
     x = "Burned Area (acres)",
     y = "Frequency"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 8, hjust = 0)  
+  )
 ```
 
 ```{r}
@@ -439,8 +442,8 @@ ggplot(data = wildfire_clean_long,
   ) +
   theme_minimal() +
   theme(
-    plot.title = element_text(hjust = 0),
-    plot.subtitle = element_text(hjust = 0),
+    plot.title = element_text(hjust = 0, size = 12),
+    plot.subtitle = element_text(hjust = 0, size = 10),
     legend.position = "none"
   )
 ```
@@ -457,11 +460,16 @@ ggplot(wildfire_clean, aes(x = Temp_pre_15, y = fire_size)) +
   geom_smooth(method = "lm", se = FALSE, color = "gray40") +
   facet_wrap(~ region) +
   labs(
-    title = "Relationship Between Temperature and Burned Area by Region",
+    title = "Relationship Between Temperature and Burned Area", 
+    subtitle = "Grouped by Region", 
     x = "Temperature (°C)",
     y = "Burned Area (acres)"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 12),    
+    plot.subtitle = element_text(size = 10)  
+  )
 ```
 
 ```{r}
@@ -474,11 +482,16 @@ ggplot(wildfire_clean, aes(x = remoteness, y = fire_size)) +
   geom_smooth(method = "lm", se = FALSE, color = "gray40") +
   facet_wrap(~ Vegetation_group) +
   labs(
-    title = "Relationship Between Remoteness and Burned Area by Vegetation Type",
+    title = "Relationship Between Remoteness and Burned Area",
+    subtitle = "Grouped by Vegetation Type", 
     x = "Remoteness (scaled distance to nearest city)",
     y = "Burned Area (acres)"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 12),    
+    plot.subtitle = element_text(size = 10)  
+  )
 ```
 
 ## Methodology
@@ -490,7 +503,12 @@ exp_fire_fit <- lm(fire_size ~ region + cause_category + remoteness +
                      Vegetation_group + Wind_pre_15 + Prec_pre_15 + 
                      Temp_pre_15 + Hum_pre_15, data = wildfire_clean)
 
+exp_fire_int_fit <- lm(fire_size ~ region * Temp_pre_15 + cause_category + 
+                       remoteness * Vegetation_group + Wind_pre_15 + Prec_pre_15 + 
+                        Hum_pre_15, data = wildfire_clean)
+
 glance(exp_fire_fit)
+glance(exp_fire_int_fit)
 ```
 
 ```{r}
