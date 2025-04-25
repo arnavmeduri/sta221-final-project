@@ -57,13 +57,13 @@ To prepare the dataset, we first removed observations with missing values in key
 #| echo: false
 #| warning: false
 
-library(tidyverse)
-library(tidymodels)
 library(knitr)
 library(lubridate)
 library(stringr)
 library(patchwork)
 library(GGally)
+library(tidyverse)
+library(tidymodels)
 
 wildfire <- read_csv("data/FW_Veg_Rem_Combined.csv")
 ```
@@ -155,7 +155,26 @@ ggplot(wildfire_clean, aes(x = fire_size)) +
 ```
 
 ```{r}
-#| label: temp-dist
+#| label: fire-size-summary-stats
+#| echo: false
+#| warning: false
+
+wildfire_clean |>
+  summarise(
+    Count = n(),
+    Min = min(fire_size, na.rm = TRUE),
+    Q1 = quantile(fire_size, 0.25, na.rm = TRUE),
+    Median = median(fire_size, na.rm = TRUE),
+    Mean = mean(fire_size, na.rm = TRUE),
+    Q3 = quantile(fire_size, 0.75, na.rm = TRUE),
+    Max = max(fire_size, na.rm = TRUE),
+    SD = sd(fire_size, na.rm = TRUE)
+  ) |>
+  kable(digits = 2)
+```
+
+```{r}
+#| label: quantitative-univariate-eda
 #| echo: false
 #| warning: false
 #| fig-width: 7
@@ -209,6 +228,52 @@ p4 <- ggplot(wildfire_clean, aes(x = remoteness)) +
 ```
 
 ```{r}
+#| label: quantitative-summary-stats
+#| echo: false
+#| warning: false
+
+wildfire_clean |>
+  summarise(
+    Temperature_Min = min(Temp_pre_15, na.rm = TRUE),
+    Temperature_Q1 = quantile(Temp_pre_15, 0.25, na.rm = TRUE),
+    Temperature_Median = median(Temp_pre_15, na.rm = TRUE),
+    Temperature_Mean = mean(Temp_pre_15, na.rm = TRUE),
+    Temperature_Q3 = quantile(Temp_pre_15, 0.75, na.rm = TRUE),
+    Temperature_Max = max(Temp_pre_15, na.rm = TRUE),
+    Temperature_SD = sd(Temp_pre_15, na.rm = TRUE),
+
+    Humidity_Min = min(Hum_pre_15, na.rm = TRUE),
+    Humidity_Q1 = quantile(Hum_pre_15, 0.25, na.rm = TRUE),
+    Humidity_Median = median(Hum_pre_15, na.rm = TRUE),
+    Humidity_Mean = mean(Hum_pre_15, na.rm = TRUE),
+    Humidity_Q3 = quantile(Hum_pre_15, 0.75, na.rm = TRUE),
+    Humidity_Max = max(Hum_pre_15, na.rm = TRUE),
+    Humidity_SD = sd(Hum_pre_15, na.rm = TRUE),
+
+    Wind_Min = min(Wind_pre_15, na.rm = TRUE),
+    Wind_Q1 = quantile(Wind_pre_15, 0.25, na.rm = TRUE),
+    Wind_Median = median(Wind_pre_15, na.rm = TRUE),
+    Wind_Mean = mean(Wind_pre_15, na.rm = TRUE),
+    Wind_Q3 = quantile(Wind_pre_15, 0.75, na.rm = TRUE),
+    Wind_Max = max(Wind_pre_15, na.rm = TRUE),
+    Wind_SD = sd(Wind_pre_15, na.rm = TRUE),
+
+    Remoteness_Min = min(remoteness, na.rm = TRUE),
+    Remoteness_Q1 = quantile(remoteness, 0.25, na.rm = TRUE),
+    Remoteness_Median = median(remoteness, na.rm = TRUE),
+    Remoteness_Mean = mean(remoteness, na.rm = TRUE),
+    Remoteness_Q3 = quantile(remoteness, 0.75, na.rm = TRUE),
+    Remoteness_Max = max(remoteness, na.rm = TRUE),
+    Remoteness_SD = sd(remoteness, na.rm = TRUE)
+  ) |>
+  pivot_longer(everything(),
+               names_to = c("Variable", "Statistic"),
+               names_sep = "_") |>
+  pivot_wider(names_from = Statistic, values_from = value) |>
+  kable(digits = 2)
+```
+
+```{r}
 #| label: categorical-dist
 #| echo: false
 #| warning: false
@@ -253,7 +318,6 @@ p5 <- ggplot(wildfire_clean, aes(x = Precipitation)) +
   labs(title = "Precipitation", subtitle = "15 days prior to discovery", x = NULL, y = "Count") +
   base_theme
 
-# Define layout string
 layout <- "
 AAABBBCCC
 AAABBBCCC
