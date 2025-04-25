@@ -1,5 +1,5 @@
 ---
-title: "Analyzing Factors Associated with Wildfire Burned Area in the United States"
+title: "Analyzing Factors Associated with Area Burned by Wildfires in the United States"
 author: "Info Innovators: Kevin Mao, Arnav Meduri, Ben Trokenheim, Ricardo Urena"
 date: "March 20, 2025"
 format: pdf
@@ -153,7 +153,7 @@ ggplot(wildfire_clean, aes(x = fire_size)) +
   ) +
   theme_minimal() +
   theme(
-    plot.title = element_text(size = 8, hjust = 0)  
+    plot.title = element_text(size = 11, hjust = 0)  
   )
 ```
 
@@ -318,7 +318,7 @@ p4 <- ggplot(wildfire_clean, aes(x = season)) +
 
 p5 <- ggplot(wildfire_clean, aes(x = Precipitation)) +
   geom_bar(fill = "cadetblue4", color = "white", alpha = 0.8) +
-  labs(title = "Precipitation", subtitle = "15 days prior to discovery", x = NULL, y = "Count") +
+  labs(title = "Precipitation", x = NULL, y = "Count") +
   base_theme
 
 layout <- "
@@ -409,7 +409,7 @@ sp4 <- ggplot(wildfire_clean, aes(x = remoteness, y = fire_size)) +
 
 wildfire_clean_long <- wildfire_clean |>
   pivot_longer(
-    cols = c(Vegetation_group, cause_category, season, region),
+    cols = c(Vegetation_group, cause_category, season, region, Precipitation),  # Added Precipitation
     names_to = "Group_Type",
     values_to = "Group"
   ) |>
@@ -417,9 +417,10 @@ wildfire_clean_long <- wildfire_clean |>
     Group_Type = recode(
       Group_Type,
       Vegetation_group = "Vegetation Type",
-      cause_category  = "Cause Category",
-      season          = "Season",
-      region          = "Region"
+      cause_category   = "Cause Category",
+      season           = "Season",
+      region           = "Region",
+      Precipitation    = "Precipitation"    
     )
   )
 
@@ -467,8 +468,8 @@ ggplot(wildfire_clean, aes(x = Temp_pre_15, y = fire_size)) +
   ) +
   theme_minimal() +
   theme(
-    plot.title = element_text(size = 12),    
-    plot.subtitle = element_text(size = 10)  
+    plot.title = element_text(size = 11),    
+    plot.subtitle = element_text(size = 9)  
   )
 ```
 
@@ -489,8 +490,8 @@ ggplot(wildfire_clean, aes(x = remoteness, y = fire_size)) +
   ) +
   theme_minimal() +
   theme(
-    plot.title = element_text(size = 12),    
-    plot.subtitle = element_text(size = 10)  
+    plot.title = element_text(size = 11),    
+    plot.subtitle = element_text(size = 9)  
   )
 ```
 
