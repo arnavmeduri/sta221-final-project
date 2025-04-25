@@ -1,5 +1,5 @@
 ---
-title: "Analyzing Factors Associated with Wildfire Burned Area in the United States"
+title: "Analyzing Factors Associated with Wildfire Size in the United States"
 author: "Info Innovators: Kevin Mao, Arnav Meduri, Ben Trokenheim, Ricardo Urena"
 date: "March 20, 2025"
 format: pdf
@@ -341,7 +341,7 @@ combined_plot
 #| echo: false
 #| warning: false
 #| fig-width: 7
-#| fig-height: 5.5
+#| fig-height: 5
 
 sp1 <- ggplot(wildfire_clean, aes(x = Temp_pre_15, y = fire_size)) +
   geom_point(alpha = 0.3, color = "cadetblue4") +
