@@ -148,12 +148,13 @@ ggplot(wildfire_clean, aes(x = fire_size)) +
   geom_histogram(fill = "cadetblue4", color = "white", alpha = 0.8) +
   labs(
     title = "Distribution of Area Burned by Wildfires", 
+    subtitle = "Moderate-Sized Wildfires", 
     x = "Burned Area (acres)",
     y = "Frequency"
   ) +
   theme_minimal() +
   theme(
-    plot.title = element_text(size = 11, hjust = 0)  
+    plot.title = element_text(size = 11, hjust = 0) ,
   )
 ```
 
@@ -469,7 +470,9 @@ ggplot(wildfire_clean, aes(x = Temp_pre_15, y = fire_size)) +
   theme_minimal() +
   theme(
     plot.title = element_text(size = 11),    
-    plot.subtitle = element_text(size = 9)  
+    plot.subtitle = element_text(size = 9),
+    axis.title.x = element_text(size = 9),
+    axis.title.y = element_text(size = 9)
   )
 ```
 
@@ -491,7 +494,9 @@ ggplot(wildfire_clean, aes(x = remoteness, y = fire_size)) +
   theme_minimal() +
   theme(
     plot.title = element_text(size = 11),    
-    plot.subtitle = element_text(size = 9)  
+    plot.subtitle = element_text(size = 9), 
+    axis.title.x = element_text(size = 9),
+    axis.title.y = element_text(size = 9)
   )
 ```
 
