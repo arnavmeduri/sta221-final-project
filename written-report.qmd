@@ -333,11 +333,9 @@ wildfire_clean <- wildfire_clean |>
     )
   )
 
-# Common theme with angled x-axis
 base_theme <- theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-# Create each bar plot
 p1 <- ggplot(wildfire_clean, aes(x = cause_category)) +
   geom_bar(fill = "cadetblue4", color = "white", alpha = 0.8) +
   labs(title = "Wildfire Cause Category", x = NULL, y = "Count") +
@@ -353,32 +351,21 @@ p3 <- ggplot(wildfire_clean, aes(x = region)) +
   labs(title = "Region", x = NULL, y = "Count") +
   base_theme
 
-p4 <- ggplot(wildfire_clean, aes(x = season)) +
-  geom_bar(fill = "cadetblue4", color = "white", alpha = 0.8) +
-  labs(title = "Season", x = NULL, y = "Count") +
-  base_theme
-
-p5 <- ggplot(wildfire_clean, aes(x = Precipitation)) +
+p4 <- ggplot(wildfire_clean, aes(x = Precipitation)) +
   geom_bar(fill = "cadetblue4", color = "white", alpha = 0.8) +
   labs(title = "Precipitation", x = NULL, y = "Count") +
   base_theme
 
-layout <- "
-AAABBBCCC
-AAABBBCCC
-DDDDEEEEE
-DDDDEEEEE
-"
-
-combined_plot <- p5 + p2 + p3 + p4 + p1 +
-  plot_layout(design = layout) +
+# Combine with normal patchwork
+combined_plot <- (p1 | p2) /
+                 (p3 | p4) +
   plot_annotation(
-    title = "Distribution of Categorical Environmental Variables",
+    title = "Distribution of Categorical Environmental Variables"
   )
 
 combined_plot
 
-categorical_vars <- c("cause_category", "Vegetation_group", "region", "season", "Precipitation")
+categorical_vars <- c("cause_category", "Vegetation_group", "region", "Precipitation")
 ```
 
 #### Bivariate EDA
@@ -465,7 +452,7 @@ To \_\_\_\_ \[fill in blank here\], we also looked at the relationship between e
 
 wildfire_clean_long <- wildfire_clean |>
   pivot_longer(
-    cols = c(Vegetation_group, cause_category, season, region, Precipitation),  # Added Precipitation
+    cols = c(Vegetation_group, cause_category, region, Precipitation),  
     names_to = "Group_Type",
     values_to = "Group"
   ) |>
@@ -474,12 +461,12 @@ wildfire_clean_long <- wildfire_clean |>
       Group_Type,
       Vegetation_group = "Vegetation Type",
       cause_category   = "Cause Category",
-      season           = "Season",
       region           = "Region",
-      Precipitation    = "Precipitation"    
+      Precipitation    = "Precipitation"
     )
   )
 
+# Create the boxplot
 ggplot(data = wildfire_clean_long, 
        aes(x = Group, y = fire_size, color = Group)) +
   geom_boxplot(fill = NA) +
