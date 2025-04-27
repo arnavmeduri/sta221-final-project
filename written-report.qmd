@@ -534,7 +534,7 @@ The main goal of our analysis was to examine how various wildfire-related factor
 
 ### Explanatory Modeling
 
-To guide predictor selection for the explanatory model, we used a forward selection approach based on adjusted $R^2$ (which accounts for model fit while penalizing unnecessary predictors). Ultimately, we included all predictors of interest in our model, since each contributed to an increase in adjusted $R^2$ in our model. Specifically, we arrived at a linear regression model predicting fire size from region, temperature, wind speed, precipitation, relative humidity (measured 15 days before fire discovery), remoteness, vegetation group, and an interaction between vegetation group and precipitation. We decided to mean-center the quantitative predictors in our model to improve interpretability of the coefficients.
+To guide predictor selection for the explanatory model, we used a forward selection approach based on adjusted $R^2$ (which accounts for model fit while penalizing unnecessary predictors). Ultimately, we included all predictors of interest in our model, since each contributed to an increase in adjusted $R^2$ in our model. Specifically, we arrived at a linear regression model predicting fire size from region, temperature, cause category, containment time, wind speed, precipitation, relative humidity (measured 15 days before fire discovery), remoteness, vegetation group, and an interaction between vegetation group and precipitation. We decided to mean-center the quantitative predictors in our model to improve interpretability of the coefficients.
 
 After fitting this initial model, we conducted diagnostics to evaluate whether key assumptions (i.e., linearity, normality, constant variance, and independence) were satisfied. We found that the normality, linearity, and independence conditions were reasonably satisfied, but the constant variance condition was violated, and there was a potential violation in the linearity condition. To address constant variance, we applied a variance-stabilizing (logarithmic) transformation to the fire size variable. For linearity, we examined residuals against predictors to more closely assess if there were any nonlinear relationships between predictors and fire size. However, we found no concerning evidence of non-linearity, so we did not transform our predictors.
 
@@ -545,38 +545,48 @@ We also checked for influential points based on Cook’s Distance ($D_i > 0.5$),
 ```{r}
 #| label: linear-model
 
+exp_fire_fit <- lm(fire_size ~ region + cause_category + remoteness + Vegetation_group + 
+                   Wind_pre_15 + Prec_pre_15 + Temp_pre_15 + Hum_pre_15 , data = wildfire_clean)
 
-fire_pre_linear_fit <- lm(fire_size ~ region + cause_category + remoteness + Vegetation_group + 
-                   Wind_pre_15 + Temp_pre_15 + Hum_pre_15, data = wildfire_clean)
-
-fire_linear_fit <- lm(log(fire_size) ~ region + cause_category + remoteness + Vegetation_group * Prec_pre_15 + 
-                   Wind_pre_15 + Temp_pre_15 + Hum_pre_15, data = wildfire_clean)
+wildfire_clean <- wildfire_clean |>
+  mutate(
+    Prec_pre_15_cent = scale(Prec_pre_15, center = TRUE, scale = FALSE),
+    Wind_pre_15_cent = scale(Wind_pre_15, center = TRUE, scale = FALSE),
+    Temp_pre_15_cent = scale(Temp_pre_15, center = TRUE, scale = FALSE),
+    Hum_pre_15_cent = scale(Hum_pre_15, center = TRUE, scale = FALSE)
+  )
 
 wildfire_clean$region <- recode(wildfire_clean$region, 
                                 "South" = "South_West", 
                                 "West" = "South_West")
 
-fire_linear_fit_adjusted <- lm(log(fire_size) ~ region + cause_category + remoteness + 
-                               Vegetation_group * Prec_pre_15 + Wind_pre_15 + Temp_pre_15 + Hum_pre_15, 
+fire_linear_fit <- lm(log(fire_size) ~ region + cause_category + remoteness + 
+                               Vegetation_group * Prec_pre_15_cent + Wind_pre_15_cent + Temp_pre_15_cent +
+                                 Hum_pre_15_cent + putout_time,
                                data = wildfire_clean)
 
+glance(fire_linear_fit)
 ```
 
 ### Predictive Modeling
 
-As part of our explanatory modeling process, we retained all of the vairables in oru rpeicigve modeling (rpocodess.idk), but added putout time and cause cagtegory (find mroea aoptiw woridng) to . We consduerd both of thesevarbales at this step since (explain ) (The casue of a widlfire is likely only to be known muchbafter the fire and coanot be ued to rpedcigt, and putout time.....) These factros provide
+For the predictive model, we fit a
 
 ```{r}
 
-fire_log_fit <- glm(mid50_hi ~ region + Temp_pre_30 + remoteness + Vegetation_group +
-    Wind_pre_30 + Vegetation_group * Prec_pre_30 + Hum_pre_30 + putout_time_num +
-    cause_category, data = wildfire_clean, family = "binomial")
+fire_log_fit <- glm(mid50_hi ~ region + remoteness + Vegetation_group * Prec_pre_15 + 
+                   Wind_pre_15 + Temp_pre_15 + Hum_pre_15, data = wildfire_clean, family = "binomial")
 
 tidy(fire_log_fit, conf.int = TRUE) |>
   kable(digits = 3)
 ```
 
 ## Results
+
+```{r}
+tidy(fire_linear_fit) |>
+  kable(digits = 3)
+```
 
 ## Discussion
 
@@ -585,7 +595,7 @@ tidy(fire_log_fit, conf.int = TRUE) |>
 ```{r}
 #| label: residuals-fitted-vals-plot
 
-fire_linear_fit_aug <- augment(fire_linear_fit_adjusted)
+fire_linear_fit_aug <- augment(fire_linear_fit)
 
 ggplot(fire_linear_fit_aug, aes(x = .fitted, y = .std.resid, color = .cooksd)) +
   geom_point() +
@@ -605,12 +615,12 @@ high_cooks_points <- fire_linear_fit_aug |>
 high_cooks_points
 ```
 
-spatial distribution of residuals - independence
-
 ```{r}
 #| label: spatial-distribution-residuals
 
-fire_linear_fit_aug <- fire_linear_fit_aug |>
+exp_fire_fit_aug <- augment(exp_fire_fit)
+
+fire_linear_fit_aug <- exp_fire_fit_aug |>
   mutate(
     latitude = wildfire_clean$latitude,
     longitude = wildfire_clean$longitude
