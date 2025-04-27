@@ -1,3 +1,3 @@
-# Predicting Total Burned Area of Wildfires Using Geographic, Environmental, and Fire-Specific Factors
+# Analyzing Factors Associated with AreaBurned by Wildfires in the United States
 by the Info Innovators
 
