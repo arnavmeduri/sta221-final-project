@@ -8,45 +8,26 @@ execute:
   message: false
   echo: false
 editor: visual
+bibliography: references.bib
 ---
 
 ## Introduction and Data
 
-Wildfires are among the most damaging natural disasters in the U.S., with recent years bringing record-breaking destruction in terms of acreage burned, economic loss, and human displacement in places like California and Western North Carolina. Climate change has exacerbated the issue by intensifying drought, reducing vegetation moisture, and increasing fuel availability—making wildfires more frequent and less predictable. These challenges highlight the urgent need for better tools to anticipate wildfire behavior and allocate resources effectively.
+#### Background and Data Description
 
-This project aims to predict the total area burned by analyzing historical wildfire data alongside environmental, weather, and geographic factors. By identifying the variables most strongly associated with fire spread—such as temperature, wind, humidity, precipitation, vegetation type, and fire remoteness—we hope to develop models that can guide strategic decision-making. Improved prediction could help firefighting agencies and policymakers prioritize high-risk events, respond faster, and reduce the overall damage caused by wildfires.
+Wildfires are destructive natural disasters that occur regularly across the United States. According to the EPA, the U.S. has averaged approximately 70,000 wildfires per year since 1983[^1]. Although fire is a natural part of many ecosystems, wildfires have important economic and environmental consequences (e.g., property loss, greenhouse gas emissions, and ecosystem degradation). After learning about recent wildfire events in California and western North Carolina, we became interested in better understanding the factors that contribute to variation in the area burned by wildfires. With wildfires affecting many parts of the country, identifying the factors associated with the extent of area burned can help inform decisions by wildfire management agencies. In light of this, we focused on two primary research questions: (a) What factors known before a wildfire has occurred are most strongly associated with the area burned? and (b) What overall factors (including those available after a wildfire) help explain variability in burned area? To answer these research questions, we conducted exploratory data analysis and fitted multiple linear regression models to examine associations between wildfire characteristics and area burned.
 
-[Research Question:]{.underline}
+[^1]: United States Environmental Protection Agency, "Climate Change Indicators: Wildfires," 2023, https://www.epa.gov/climate-indicators/climate-change-indicators-wildfires.
 
-What environmental and fire-specific factors influence wildfire size, and can we build models to estimate burned area based on those factors?
+The dataset used in this analysis is an integrated dataset consisting of over 55,000 wildfire records from the United States between 1992 and 2015, compiled from the Fire Program Analysis system. In addition to wildfire-specific attributes recorded in this database (such as fire size, cause, discovery and containment dates, and location), the dataset was supplemented with additional information from the Forest Service Research Data Archive, NOAA Integrated Surface Hourly Database, vegetation and land cover data from Meiyappan and Jain’s global land-use dataset, and geographic proximity data from SimpleMap’s World Cities Database. As part of our analysis, we used a subset of these variables, including fire size (measured in acres) as the response variable; cause of fire (categorized as missing/undefined, arson, debris burning, miscellaneous, campfire, fireworks, children, lightning, equipment use, smoking, railroad, structure, or powerline); temperature (°C), wind speed (meters per second), relative humidity (%), and precipitation (millimeters) recorded 30 days prior to the fire; vegetation classification based on land cover (with categories Open Shrubland, Polar Desert/Rock/Ice, Secondary Tropical Evergreen Broadleaf Forest, Temperate Evergreen Needleleaf Forest, C3 Grassland/Steppe, Desert, and Water/Rivers); and remoteness (a unitless value between 0 and 1 representing the scaled distance from the nearest urban center).
 
-[Sources:]{.underline}
+#### Hypotheses
 
-Our compiled [dataset](https://github.com/varunr89/smokey/blob/master/FW_Veg_Rem_Combined.csv) integrates information from four sources: [NOAA](https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database) National Centers for Environmental Information (2021), [World Cities Database](https://simplemaps.com/data/world-cities), [Forest Service Research Data Archive](ttps://doi.org/10.2737/RDS-2013-0009.4), and [Frontiers of Earth Science](https://bg.copernicus.org/preprints/11/C2254/2014/bgd-11-C2254-2014-supplement.pdf).
-
-[Key Variables:]{.underline}
-
-The compiled dataset (which we will be using in our analysis) consists of 43 variables, including attributes such as fire name, size, class, cause, location (latitude/longitude, state), discovery month, containment time, and environmental conditions before and during the fire event. Weather-related variables include temperature, wind speed, humidity, and precipitation recorded at multiple time points (30, 15, and 7 days before containment, as well as on the day the fire was contained). Some key variables from the dataset are:
-
--   `fire_size` (acres): The total area burned by the fire, measured in acres.
-
--   `stat_cause_descr`: The documented cause of the fire, such as lightning, human activity, or equipment use. latitude (degrees): The geographical latitude coordinate of the fire's point of origin, measured in decimal degrees.
-
--   `Vegetation`: The dominant type of vegetation in the fire-affected area, categorized into specific vegetation classes, such as tropical forests, grasslands, shrublands, and urban land.
-
--   `Temp_pre_15` (°C): The recorded temperature at the fire location up to 15 days before the fire was contained, measured in degrees Celsius.
-
--   `Wind_pre_15` (m/s): The wind speed at the fire location up to 15 days before containment, measured in meters per second.
-
--   `Hum_pre_15` (%): The humidity level at the fire location up to 15 days before containment, expressed as a percentage.
-
--   `Prec_pre_15` (mm): The total amount of precipitation recorded at the fire location up to 15 days before containment, measured in millimeters.
-
--   `remoteness` (non-dimensional): A calculated measure representing the distance of the fire’s location from the nearest city or major populated area, expressed as a non-dimensional value.
+We hypothesize that (1) wildfire event characteristics, environmental conditions prior to discovery, and geographic factors are associated with the area burned, since hotter, drier, and windier conditions are likely to be positively associated with burned area, more flammable vegetation and greater remoteness are also likely to be positively associated, and certain fire characteristics may influence fire size, and that (2) variables available after a wildfire occurs help explain additional variability in burned area, since information available after discovery (e.g., underlying cause of the fire and environmental or geographic conditions observed during containment) may be related to how the fire spread and how difficult it was to control.
 
 ## Exploratory Data Analysis
 
-#### Data Cleaning
+### Data Cleaning
 
 Before conducting our analysis, we applied many data cleaning steps to prepare our dataset for modeling and interpretation. One of the major decisions we made as part of our data cleaning process was to filter our response variable, acres burned, since the majority of observations in our dataset (over 13,000) recorded fires that burned one acre or less of land (i.e., small-scale wildfires). In our analysis, we decided to focus only on the interquartile range (middle 50%) of wildfires by acres burned because a) the goal of our analysis was to focus on wildfires that can reasonably be addressed during early containment efforts (rather than fires that had already expanded beyond an early intervention phase) and b) to narrow our practical range for analysis (i.e., wildfires representative of "typical" wildfire events).
 
@@ -66,6 +47,7 @@ library(patchwork)
 library(GGally)
 library(tidyverse)
 library(tidymodels)
+library(rms)
 
 wildfire <- read_csv("data/FW_Veg_Rem_Combined.csv")
 ```
@@ -74,7 +56,7 @@ wildfire <- read_csv("data/FW_Veg_Rem_Combined.csv")
 #| label: clean-data
 
 wildfire_clean <- wildfire |>
-  select(-(1:2)) |>
+  select(-(1:2)) |> 
   mutate(
     Prec_pre_30 = if_else(Prec_pre_30 == -1, NA_real_, if_else(Prec_pre_30 == 0, 0, 1)),
     Prec_pre_15 = if_else(Prec_pre_15 == -1, NA_real_, if_else(Prec_pre_15 == 0, 0, 1)),
@@ -91,8 +73,7 @@ wildfire_clean <- wildfire |>
       state %in% c("DE", "FL", "GA", "MD", "NC", "SC", "VA", "DC", "WV", 
                    "AL", "KY", "MS", "TN", "AR", "LA", "OK", "TX") ~ "South",
       state %in% c("AZ", "CO", "ID", "MT", "NV", "NM", "UT", "WY", "AK", 
-                   "CA", "HI", "OR", "WA") ~ "West",
-      TRUE ~ "Other"
+                   "CA", "HI", "OR", "WA") ~ "West"
     ) |> factor(),
     cause_category = case_when(
       stat_cause_descr == "Lightning" ~ "Natural",
@@ -112,6 +93,7 @@ wildfire_clean <- wildfire |>
       TRUE ~ "Other"
     ) |> factor()
   ) |>
+  filter(!is.na(region)) |> 
   drop_na(
     fire_mag, stat_cause_descr, Vegetation, remoteness, fire_size, putout_time,
     Prec_pre_15, Prec_pre_30, Prec_pre_7, Prec_cont,
@@ -199,7 +181,7 @@ wildfire_clean |>
   kable(digits = 2)
 ```
 
-Next, we visualized the distribution of the quantitative variables of interest in our dataset (temperature, relative humidity, and wind speed from 30 days prior to fire discovery, and remoteness), along with summary statistics to better understand their scale and variability. Among these predictors, we first examined the distribution of temperature a month before discovery (top left panel), which we observed to be approximately normal and unimodal. (This is consistent with what we would generally expect, since temperature tends to change gradually across different areas rather than clustering at specific values.) The median temperature for wildfire observations in our dataset is 12.97°C and the mean is 13.58°C, with most observations between 6.53°C and 21.36°C, and a range from -49.21°C to 41.68°C.
+Next, we visualized the distribution of the quantitative variables of interest in our dataset (temperature, relative humidity, and wind speed from 30 days prior to fire discovery, as well as containment time remoteness), along with summary statistics to better understand their scale and variability. Among these predictors, we first examined the distribution of temperature a month before discovery (top left panel), which we observed to be approximately normal and unimodal. (This is consistent with what we would generally expect, since temperature tends to change gradually across different areas rather than clustering at specific values.) The median temperature for wildfire observations in our dataset is 12.97°C and the mean is 13.58°C, with most observations between 6.53°C and 21.36°C, and a range from -49.21°C to 41.68°C.
 
 We then examined the distributions of wind speed thirty days before discovery and remoteness (top right and bottom left panels, respectively). Wind speed appears to be very slightly right-skewed and unimodal, while remoteness appears more strongly right-skewed and unimodal. This indicates that most fires occurred relatively close to populated areas (lower remoteness) and that most wind speeds were low to moderate. The median remoteness for observations in our dataset is 0.21 and the mean is 0.25, with most observations between 0.15 and 0.35, and values ranging from 0 to 0.99. The median wind speed for observations in our dataset is 2.89 m/s and the mean is 2.87 m/s, with most observations between 2.06 m/s and 3.76 m/s, and a range from 0 m/s to 29.80 m/s.
 
@@ -211,6 +193,7 @@ Lastly, we looked at the distribution of relative humidity thirty days before di
 #| warning: false
 #| fig-width: 8
 #| fig-height: 6
+
 
 p1 <- ggplot(wildfire_clean, aes(x = Temp_pre_30)) +
   geom_histogram(fill = "cadetblue4", color = "white", alpha = 0.8) +
@@ -445,6 +428,10 @@ We observed more apparent differences in the distribution of acres burned across
 #| fig-width: 8
 #| fig-height: 6
 
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
 wildfire_clean_long <- wildfire_clean |>
   pivot_longer(
     cols = c(Vegetation_group, cause_category, region, Precipitation),  
@@ -452,12 +439,13 @@ wildfire_clean_long <- wildfire_clean |>
     values_to = "Group"
   ) |>
   mutate(
-    Group_Type = recode(
+    Group_Type = dplyr::case_match(
       Group_Type,
-      Vegetation_group = "Vegetation Type",
-      cause_category   = "Cause Category",
-      region           = "Region",
-      Precipitation    = "Precipitation"
+      "Vegetation_group" ~ "Vegetation Type",
+      "cause_category"   ~ "Cause Category",
+      "region"           ~ "Region",
+      "Precipitation"    ~ "Precipitation",
+      .default = Group_Type
     )
   )
 
@@ -514,7 +502,7 @@ ggplot(wildfire_clean, aes(x = Temp_pre_30, y = fire_size)) +
   )
 ```
 
-We were also interested in a potential interaction between vegetation type and precipitation, since vegetation and fuel moisture could influence burned area together. However, based on the visualization below, the distributions of burned area appear relatively similar between precipitation and no precipitation conditions for each vegetation group. In forest, the median burned area is 5.0 acres for both no precipitation (mean 11.48 acres) and precipitation (mean 11.14 acres), while in grassland, the median is 3.5 acres for no precipitation (mean 12.26 acres) and 3.0 acres for precipitation (mean 11.54 acres). Additionally, in shrubland, the median is 6.0 acres for no precipitation (mean 13.52 acres) and 5.0 acres for precipitation (mean 11.31 acres), while in tundra/barren, the median is 5.0 acres for both no precipitation (mean 12.81 acres) and precipitation (mean 11.86 acres). Even though there does not seem to be a very strong interaction effect, and we will further examine this during modeling.
+We were also interested in a potential interaction between vegetation type and precipitation, since vegetation and fuel moisture could influence burned area together. However, based on the visualization below, the distributions of burned area appear relatively similar between precipitation and no precipitation conditions for each vegetation group. In forest, the median burned area is 5.0 acres for both no precipitation (mean of 11.48 acres) and precipitation (mean of 11.14 acres), while in grassland, the median is 3.5 acres for no precipitation (mean 12.26 acres) and 3.0 acres for precipitation (mean of 11.54 acres). Additionally, in shrubland, the median is 6.0 acres for no precipitation (mean of 13.52 acres) and 5.0 acres for precipitation (mean of11.31 acres), while in tundra/barren, the median is 5.0 acres for both no precipitation (mean of 12.81 acres) and precipitation (mean of 11.86 acres). Even though there does not seem to be a very strong interaction effect, and we will further examine this during modeling.
 
 ```{r}
 #| label: veg-prec-int
@@ -539,143 +527,57 @@ ggplot(wildfire_clean, aes(x = Vegetation_group, y = fire_size, color = Precipit
   ) +
   scale_color_manual(values = c("No Precipitation" = "cadetblue4", "Precipitation" = "#8FBC8F")) +
   coord_flip()
-
-wildfire_clean |>
-  group_by(Vegetation_group, Precipitation) |>
-  summarise(
-    count = n(),
-    mean_fire_size = mean(fire_size, na.rm = TRUE),
-    median_fire_size = median(fire_size, na.rm = TRUE),
-    min_fire_size = min(fire_size, na.rm = TRUE),
-    max_fire_size = max(fire_size, na.rm = TRUE)
-  ) |>
-  arrange(Vegetation_group, Precipitation)
 ```
 
 ## Methodology
 
-forward seleciton apprahc
+Since the main goal of our analysis was to understand how different wildfire-related factors are associated with burned area (a continuous numerical response variable) and how these factors could be used to predict burned area, we decided to use multiple linear regression as the primary modeling approach for this project. Specifically, since our analysis was guided by two different research questions, we fit two different models as part of our analysis: one model using only variables that would be available before or at the time of fire discovery to inform early response efforts (i.e., a predictive model), and another model using all variables of interest, including those that would only be available after a fire was contained (i.e., an explanatory model) to explain variability in burned area that would not be captured by predictive variables alone.
+
+To guide variable selection for the predictive model, we fit a full model including all of the explanatory variables we were interested in. This approach made sense because our dataset contained a limited number of predictors corresponding to information that would already be available prior to fire discovery, so it was practical to include all relevant variables rather than selecting a smaller subset. For the explanatory model, we used a forward selection-based approach based on adjusted $R^2$ (since adjusted $R^2$ accounts for model fit while penalizing the inclusion of unnecessary predictors) to build a model that added predictors of interest only when they improved adjusted $R^2$. The final explanatory model included many of the predictors from the predictive model, along with additional variables that could help explain variability in fire size.
+
+### Predictive Modeling
+
+To begin our predictive modeling process, we first fit a model predicting fire size from region, temperature, wind speed, precipitation, and relative humidity (all measured thirty days before fire discovery), along with remoteness, vegetation group, and interaction terms between region and temperature and between vegetation group and precipitation. After fitting this model, we conducted model diagnostics to evaluate whether key assumptions of linear regression were reasonably satisfied (i.e., linearity, normality, constant variance, and independence). Based on our analysis, we found that the linearity, normality, and independence conditions were reasonably satisfied, but the constant variance condition was not satisfied. As a result, we applied a variance-stabilizing (i.e., logarithmic) transformation to the response variable to address non-constant variance.
+
+Additionally, when examining the distribution of residuals versus fitted values for this initial model, we observed a clustering of observations into two groups (one group with fitted values less than or equal to 5, and another with fitted values between 5 and 20). Through further investigation, we realized that this clustering was in part explained by differences in region. As we saw in our exploratory data analysis, fires in the Northeast generally corresponded to smaller burned areas compared to fires in other regions, which likely contributed to the small separation observed in the residuals versus fitted values plot. To address this, we explored whether fitting two separate models (one for fires occurring in the Northeast and one for fires occurring in other regions) would improve model fit, but we ultimately decided to proceed with a single model including all regions because the improvement in fit was very limited (and for the sake of consistency in model interpretation).
+
+We also checked for influential points based on Cook’s Distance ($D_i > 0.5$), and found no such observations in our dataset that could substantially affect regression coefficient estimates. Lastly, in this model, we found evidence of collinearity between region and temperature (with the main effects and interaction terms for these variables having VIFs greater than 10). To address this, instead of including an explicit interaction term, we centered temperature within each region and used this centered variable in the model to account for within-region temperature variation while reducing collinearity. To note, we did not find concerning evidence of collinearity between vegetation group and precipitation, so the interaction between these variables was retained in the model.
 
 ```{r}
 #| label: linear-model
 
-exp_fire_fit <- lm(fire_size ~ region + cause_category + remoteness + 
-                     Vegetation_group + Wind_pre_30 + Prec_pre_30 +
-                     Temp_pre_30 + Hum_pre_30, data = wildfire_clean)
+wildfire_clean <- wildfire_clean |> 
+  group_by(region) |> 
+  mutate(
+    Temp_pre_30_region_centered = Temp_pre_30 - mean(Temp_pre_30, na.rm = TRUE)
+  ) |> 
+  ungroup()
 
-exp_fire_int_fit <- lm(fire_size ~ region * Temp_pre_15 + cause_category + 
-                       remoteness * Vegetation_group + Wind_pre_15 + Prec_pre_15 + 
-                        Hum_pre_15, data = wildfire_clean)
+exp_fire_int_fit <- lm(
+  log(fire_size) ~ region + Temp_pre_30 + remoteness + Vegetation_group +
+    Wind_pre_30 + Prec_pre_30 + Hum_pre_30,
+  data = wildfire_clean
+)
 
-glance(exp_fire_fit)
 glance(exp_fire_int_fit)
+vif(exp_fire_int_fit)
 ```
 
-```{r}
-library(rms)
-vif(exp_fire_fit)
-```
+### Explanatory Modeling
+
+As part of our explanatory modeling process, we retained all of the vairables in oru rpeicigve modeling (rpocodess.idk), but added putout time and cause cagtegory (find mroea aoptiw woridng) to . We consduerd both of thesevarbales at this step since (explain ) (The casue of a widlfire is likely only to be known muchbafter the fire and coanot be ued to rpedcigt, and putout time.....) These factros provide
 
 ```{r}
-log_exp_fire_fit <- lm(log(fire_size) ~ region + cause_category + remoteness + 
-                     Vegetation_group + Wind_pre_15 + Prec_pre_15 + 
-                     Temp_pre_15 + Hum_pre_15, data = wildfire_clean)
 
-glance(log_exp_fire_fit)
+exp_fire_int_fit_exp <- lm(
+  log(fire_size) ~ region + Temp_pre_30_region_centered + remoteness + Vegetation_group +
+    Wind_pre_30 + Vegetation_group * Prec_pre_30 + Hum_pre_30 + putout_time_num +
+    cause_category, 
+  data = wildfire_clean
+)
 
-log_int_exp_fire_fit <- lm(log(fire_size) ~ region + cause_category + remoteness + 
-                     Vegetation_group * Prec_pre_15 + Wind_pre_15 +
-                     Temp_pre_15 + Hum_pre_15, data = wildfire_clean)
-
-glance(log_int_exp_fire_fit)
-```
-
-First, as part of our modeling process and to determine which variables to include as predictors of wildfire size, we evaluated multicollinearity among the numeric predictors in our dataset. Specifically, we considered environmental variables measured 15 days prior to fire discovery, including precipitation (`Prec_pre_15`), temperature (`Temp_pre_15`), wind speed (`Wind_pre_15`), and humidity (`Hum_pre_15`), as well as `remoteness`, a scaled measure of distance to the nearest city. These variables were selected because they are directly tied to environmental conditions and are available for most observations. To assess multicollinearity, we used the Variance Inflation Factor (VIF), which quantifies how much the variance of each predictor is inflated due to linear dependence with the others. VIF values greater than 5 were used as a threshold to flag potential multicollinearity concerns. As shown in the output, all five predictors had VIF values well below the threshold of 5: precipitation (1.03), temperature (1.12), wind speed (1.24), humidity (1.39), and remoteness (1.20). These results suggest that there is no problematic multicollinearity among the selected predictors, and all variables were retained for use in the model.
-
-```{r}
-library(rms)
-wildfire_vif_fit <- lm(fire_size ~ Prec_pre_15 +
-                                 Temp_pre_15 +
-                                 Wind_pre_15 +
-                                 Hum_pre_15 +
-                                 remoteness,
-                       data = wildfire_clean)
-
-vif(wildfire_vif_fit)
-```
-
-After evaluating multicollinearity, we fit two linear regression models to predict wildfire size using a log-transformed version of the response variable (`log(fire_size)`). We applied the log transformation to reduce skewness in the fire size distribution and to stabilize variance. A small constant (`+ 0.001`) was added to `Prec_pre_15` before log transformation to avoid taking the logarithm of zero.
-
-The first model (`fire_main_fit`) included the main effects of `remoteness`, log-transformed `Prec_pre_15`, `Temp_pre_15`, `Vegetation`, `stat_cause_descr`, and `Wind_cont`. The second model (`fire_int_fit`) added an interaction term between `log(Prec_pre_15 + 0.001)` and `Vegetation` to explore whether the effect of precipitation on fire size varies by vegetation type.
-
-The adjusted $R^{2}$ values for the models were low: 0.037 for the main-effects model and 0.041 for the interaction model. Although the interaction model showed a slightly higher adjusted $R^{2}$, the difference in explained variance was minimal.
-
-To evaluate predictive accuracy, we computed the root mean squared error (RMSE) for both models using the log-transformed fire size. RMSE represents the average difference between the observed and predicted values on the log scale. The main-effects model had an RMSE of approximately 1.06, and the interaction model had a nearly identical RMSE of 1.059. These values indicate that, on average, the predicted log fire sizes differed from the observed values by about 1.057 log-units. Because the models are fit on a logarithmic scale, an error of this magnitude corresponds to a multiplicative factor of roughly 2.7 on the original fire size scale (in acres).
-
-```{r}
-fire_main_fit <- lm(log(fire_size) ~ remoteness + log(Prec_pre_15 + 0.001) + Temp_pre_15 + Vegetation + stat_cause_descr + Wind_cont, data = wildfire_clean)
-
-fire_int_fit <- lm(log(fire_size) ~ remoteness + Temp_pre_15 + log(Prec_pre_15 + 0.001) * Vegetation + stat_cause_descr + Wind_cont, data = wildfire_clean)
-
-tidy(fire_main_fit) |> 
-  kable(digits = 3)
-
-tidy(fire_int_fit) |> 
-  kable(digits = 3)
-
-glance(fire_main_fit)$adj.r.squared
-glance(fire_int_fit)$adj.r.squared
-
-
-# Augment the model results with fitted values
-main_aug <- augment(fire_main_fit, data = wildfire_clean) |>
-  mutate(truth = log(fire_size), estimate = .fitted)
-
-int_aug <- augment(fire_int_fit, data = wildfire_clean) |>
-  mutate(truth = log(fire_size), estimate = .fitted)
-
-# Compute RMSE using yardstick
-rmse(data = main_aug, truth = truth, estimate = estimate)
-rmse(data = int_aug, truth = truth, estimate = estimate)
-
-glance(fire_main_fit)
-```
-
-After evaluating our interaction model, we decided to explore a simpler modeling strategy by converting precipitation into an indicator variable. Rather than using continuous log-transformed precipitation, we created a binary variable to indicate whether any measurable precipitation was recorded 15 days prior to the fire. This choice was motivated by the idea that the presence or absence of precipitation may be more informative for fire behavior than small variations in precipitation amounts, particularly given the high frequency of zero or near-zero values in the dataset.
-
-To do this, we created a new variable called `precip_indicator`, which takes the value 1 if `Prec_pre_15` is greater than 0 and 0 otherwise. We then fit two new models: a main-effects model and an interaction model including the new binary indicator and its interaction with vegetation type. We evaluated model performance using adjusted $R^{2}$ and RMSE on the log-transformed fire size, consistent with earlier analyses.
-
-The adjusted $R^{2}$ or the main-effects model was 0.037. The interaction model had an adjusted $R^{2}$ of 0.039. RMSE values were 1.059 for the main-effects model and 1.058 for the interaction model. These values indicate that the average prediction error on the log scale was approximately 1.06. This corresponds to a multiplicative error of about 2.88 on the original scale of fire size. The differences between these models and the earlier continuous-precipitation models were minimal in both adjusted $R^{2}$ and RMSE.
-
-```{r}
-library(dplyr)
-library(broom)
-library(yardstick)
-
-wildfire_clean <- wildfire_clean %>%
-  mutate(precip_indicator = ifelse(Prec_pre_15 > 0, 1, 0))
-
-fire_main_bin <- lm(log(fire_size) ~ remoteness + precip_indicator +
-                                 Temp_pre_15 + Vegetation +
-                                 stat_cause_descr + Wind_cont,
-                    data = wildfire_clean)
-
-fire_int_bin <- lm(log(fire_size) ~ remoteness + Temp_pre_15 +
-                                precip_indicator * Vegetation +
-                                stat_cause_descr + Wind_cont,
-                   data = wildfire_clean)
-
-glance(fire_main_bin)$adj.r.squared
-glance(fire_int_bin)$adj.r.squared
-
-main_bin_aug <- augment(fire_main_bin, data = wildfire_clean) %>%
-  mutate(truth = log(fire_size), estimate = .fitted)
-
-int_bin_aug <- augment(fire_int_bin, data = wildfire_clean) %>%
-  mutate(truth = log(fire_size), estimate = .fitted)
-
-rmse(main_bin_aug, truth = truth, estimate = estimate)
-rmse(int_bin_aug, truth = truth, estimate = estimate)
+glance(exp_fire_int_fit_exp)
+vif(exp_fire_int_fit_exp)
 ```
 
 ## Results
@@ -690,75 +592,12 @@ Overall, there were minimal differences in adjusted $R^2$ and RMSE between the m
 
 ## Appendix
 
-Std. residuals vs. fitted values - constant variance, linearity, cook's distance (influential points)
-
-```{r}
-# Temperature at Containment
-p1 <- ggplot(wildfire_clean, aes(x = Temp_cont)) +
-  geom_histogram(fill = "cadetblue4", color = "white", alpha = 0.8) +
-  labs(
-    title = "Temperature",
-    subtitle = "At time of containment (°C)",
-    x = "Temperature (°C)",
-    y = "Frequency"
-  ) +
-  theme_minimal()
-
-# Relative Humidity at Containment
-p2 <- ggplot(wildfire_clean, aes(x = Hum_cont)) +
-  geom_histogram(fill = "cadetblue4", color = "white", alpha = 0.8) +
-  labs(
-    title = "Relative Humidity",
-    subtitle = "At time of containment (%)",
-    x = "Relative Humidity (%)",
-    y = "Frequency"
-  ) +
-  theme_minimal()
-
-# Wind Speed at Containment
-p3 <- ggplot(wildfire_clean, aes(x = Wind_cont)) +
-  geom_histogram(fill = "cadetblue4", color = "white", alpha = 0.8) +
-  labs(
-    title = "Wind Speed",
-    subtitle = "At time of containment (m/s)",
-    x = "Wind Speed (m/s)",
-    y = "Frequency"
-  ) +
-  theme_minimal()
-
-p4 <- ggplot(wildfire_clean, aes(x = Prec_cont)) +
-  geom_histogram(fill = "cadetblue4", color = "white", alpha = 0.8) +
-  labs(
-    title = "Precipitation",
-    subtitle = "At time of containment (mm)",
-    x = "Precipitation (mm)",
-    y = "Frequency"
-  ) +
-  theme_minimal()
-
-# Putout Time
-p5 <- ggplot(wildfire_clean, aes(x = putout_time_num)) +
-  geom_histogram(fill = "cadetblue4", color = "white", alpha = 0.8) +
-  labs(
-    title = "Putout Time",
-    subtitle = "Elapsed time until containment (hours)",
-    x = "Putout Time (hours)",
-    y = "Frequency"
-  ) +
-  theme_minimal()
-
-(p1 | p2) / (p3 | p4) / p5 +
-  plot_annotation(
-    title = "Distribution of Variables Recorded After Fire Containment"
-  )
-```
-
 ```{r}
 #| label: residuals-fitted-vals-plot
 
-exp_fire_fit_aug <- augment(exp_fire_fit)
+exp_fire_int_fit_aug <- augment(exp_fire_int_fit)
 
-ggplot(exp_fire_fit_aug, aes(x = .fitted, y = .std.resid, color = .cooksd)) +
+ggplot(exp_fire_int_fit_aug, aes(x = .fitted, y = .std.resid, color = .cooksd)) +
   geom_point() +
   geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
   labs(
@@ -768,6 +607,12 @@ ggplot(exp_fire_fit_aug, aes(x = .fitted, y = .std.resid, color = .cooksd)) +
     color = "Cook's Distance"
   ) +
   theme_minimal()
+
+high_cooks_points <- exp_fire_int_fit_aug |>
+  filter(.cooksd > 1) |>
+  select(.fitted, .std.resid, .cooksd)
+
+high_cooks_points
 ```
 
 spatial distribution of residuals - independence
@@ -775,10 +620,11 @@ spatial distribution of residuals - independence
 ```{r}
 #| label: spatial-distribution-residuals
 
-exp_fire_fit_aug <- bind_cols(
-  exp_fire_fit_aug, 
-  wildfire_clean |> 
-    select(latitude, longitude))
+exp_fire_int_fit_aug <- exp_fire_int_fit_aug |>
+  mutate(
+    latitude = wildfire_clean$latitude,
+    longitude = wildfire_clean$longitude
+  )
 
 us_map <- map_data("state")
 
@@ -789,13 +635,13 @@ ggplot() +
     fill = "white", color = "gray60"
   ) +
   geom_point(
-    data = exp_fire_fit_aug |> filter(longitude > -130, longitude < -65, latitude > 24, latitude < 50),
+    data = exp_fire_int_fit_aug |> filter(longitude > -130, longitude < -65, latitude > 24, latitude < 50),
     aes(x = longitude, y = latitude, color = .resid),
     size = 1.5, alpha = 0.7
   ) +
   scale_color_distiller(
     palette = "RdBu", direction = 1,
-    name = "Residual", limits = c(min(exp_fire_fit_aug$.resid), max(exp_fire_fit_aug$.resid))
+    name = "Residual", limits = c(min(exp_fire_int_fit_aug$.resid), max(exp_fire_int_fit_aug$.resid))
   ) +
   coord_fixed(1.3) +
   labs(
@@ -807,360 +653,54 @@ ggplot() +
 ```
 
 ```{r}
-exp_fire_fit_aug <- augment(exp_fire_fit) |> 
-  mutate(
-    large_resid = if_else(abs(.std.resid) > 3, "Yes", "No"),
-    large_resid = factor(large_resid, levels = c("Yes", "No")),
-    obs_num = row_number()
-  )
+exp_fire_int_fit_aug <- exp_fire_int_fit_aug |>
+  mutate(disc_pre_year = wildfire_clean$disc_pre_year)
 
-ggplot(exp_fire_fit_aug, aes(x = obs_num, y = .std.resid)) +
-  geom_point(aes(color = large_resid), size = 2, alpha = 0.7) + 
+ggplot(exp_fire_int_fit_aug, aes(x = disc_pre_year, y = .resid)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "gray40") +
   labs(
-    x = "Observation Number",
-    y = "Standardized Residual",
-    title = "Standardized Residuals by Observation",
-    color = "Large Residual"
-  ) +
-  scale_color_manual(values = c("Yes" = "cadetblue4", "No" = "gray50")) +
-  theme_minimal()
-```
-
-```{r}
-wildfire_clean <- wildfire_clean |> 
-  mutate(disc_clean_date = mdy(disc_clean_date))
-
-exp_fire_fit_aug <- bind_cols(
-  exp_fire_fit_aug,
-  wildfire_clean |> select(disc_clean_date)
-)
-
-ggplot(exp_fire_fit_aug, aes(x = disc_clean_date, y = .resid)) +
-  geom_point() +
-  labs(
-    title = "Residuals vs. Discovery Date",
-    x = "Discovery Date",
+    title = "Residuals vs. Year of Discovery",
+    x = "Discovery Year",
     y = "Residual"
   ) +
   theme_minimal()
 ```
 
-large leverage
-
 ```{r}
-h_threshold <- 2 * length(coef(exp_fire_fit)) / nrow(exp_fire_fit_aug)
+#| fig-width: 8
+#| fig-height: 6
 
-exp_fire_fit_aug <- exp_fire_fit_aug |> 
-  mutate(
-    large_h = if_else(.hat > h_threshold, "Yes", "No"),
-    large_h = factor(large_h, levels = c("Yes", "No"))
-  )
-
-ggplot(exp_fire_fit_aug, aes(x = obs_num, y = .hat)) +
-  geom_point(aes(color = large_h), size = 2) +
-  labs(
-    x = "Observation Number",
-    y = "Leverage",
-    title = "Leverage by Observation",
-    color = "High Leverage"
-  ) +
-  scale_color_manual(values = c("Yes" = "cadetblue4", "No" = "gray60")) +
-  theme_minimal()
-```
-
-```{r}
-# Remoteness
-ggplot(exp_fire_fit_aug, aes(x = remoteness, y = .resid)) +
-  geom_point(alpha = 0.5) +
+p1 <- ggplot(exp_fire_int_fit_aug, aes(x = remoteness, y = .resid)) +
+  geom_point(alpha = 0.2) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
   labs(x = "Remoteness", y = "Residuals", title = "Residuals vs. Remoteness") +
   theme_minimal()
 
-# Wind
-ggplot(exp_fire_fit_aug, aes(x = Wind_pre_30, y = .resid)) +
-  geom_point(alpha = 0.5) +
+p2 <- ggplot(exp_fire_int_fit_aug, aes(x = Wind_pre_30, y = .resid)) +
+  geom_point(alpha = 0.2) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-  labs(x = "Wind (Pre 15)", y = "Residuals", title = "Residuals vs. Wind") +
+  labs(x = "Wind (Pre 30 days)", y = "Residuals", title = "Residuals vs. Wind") +
   theme_minimal()
 
-# Temperature
-ggplot(exp_fire_fit_aug, aes(x = Temp_pre_30, y = .resid)) +
-  geom_point(alpha = 0.5) +
+p3 <- ggplot(exp_fire_int_fit_aug, aes(x = Temp_pre_30, y = .resid)) +
+  geom_point(alpha = 0.2) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-  labs(x = "Temperature (Pre 15)", y = "Residuals", title = "Residuals vs. Temperature") +
+  labs(x = "Temperature (Pre 30 days)", y = "Residuals", title = "Residuals vs. Temperature") +
   theme_minimal()
 
-# Humidity
-ggplot(exp_fire_fit_aug, aes(x = Hum_pre_30, y = .resid)) +
-  geom_point(alpha = 0.5) +
+p4 <- ggplot(exp_fire_int_fit_aug, aes(x = Hum_pre_30, y = .resid)) +
+  geom_point(alpha = 0.2) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-  labs(x = "Humidity (Pre 15)", y = "Residuals", title = "Residuals vs. Humidity") +
+  labs(x = "Humidity (Pre 30 days)", y = "Residuals", title = "Residuals vs. Humidity") +
   theme_minimal()
+
+(p1 + p2) / (p3 + p4) +
+  plot_annotation(
+    title = "Relationship Between Residuals and Predictors",
+    subtitle = "", 
+    theme = theme(
+      plot.title = element_text(size = 14, hjust = 0, family = "sans")
+    )
+  )
 ```
-
-```{r}
-# Region
-ggplot(exp_fire_fit_aug, aes(x = region, y = .resid)) +
-  geom_boxplot() +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-  labs(x = "Region", y = "Residuals", title = "Residuals by Region") +
-  theme_minimal()
-
-# Cause Category
-ggplot(exp_fire_fit_aug, aes(x = cause_category, y = .resid)) +
-  geom_boxplot() +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-  labs(x = "Cause Category", y = "Residuals", title = "Residuals by Cause") +
-  theme_minimal()
-
-# Vegetation Group
-ggplot(exp_fire_fit_aug, aes(x = Vegetation_group, y = .resid)) +
-  geom_boxplot() +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-  labs(x = "Vegetation Group", y = "Residuals", title = "Residuals by Vegetation") +
-  theme_minimal()
-
-# Precipitation
-ggplot(exp_fire_fit_aug, aes(x = factor(Prec_pre_30), y = .resid)) +
-  geom_boxplot() +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-  labs(
-    title = "Residuals by Precipitation",
-    x = "Precipitation (0 = No, 1 = Yes)",
-    y = "Residuals"
-  ) +
-  theme_minimal()
-```
-
-Pairwise plots (if they add value)\
-
-```{r}
-#| label: pairwise-plot-1
-#| echo: false
-#| warning: false
-
-
-ggpairs(
-  wildfire_clean |> 
-    select(fire_mag, Wind_cont, Hum_cont),
-  columnLabels = c(
-    "Fire Intensity",
-    "Wind (m/s)",
-    "Humidity (%)"
-  ),
-  title = "Fire Intensity vs. Wind & Humidity"
-)
-```
-
-```{r}
-#| label: pairwise-plot-2
-#| echo: false
-#| warning: false
-
-ggpairs(
-  wildfire_clean |> 
-    select(Temp_cont, Prec_pre_15, remoteness),
-  columnLabels = c(
-    "Temp (°C)",
-    "Prec. 15d (mm)",
-    "Remote"
-  ),
-  title = "Temperature vs. Precipitation & Remoteness"
-)
-```
-
-We began our analysis by creating pairwise plots to explore relationships between key numerical variables related to fire behavior, environmental conditions, and containment efforts. Since pairwise plots display scatterplots and correlations, we focused on continuous numerical variables that likely impact wildfire dynamics.
-
-For the first pairwise plot, we examined the relationship between fire intensity, wind speed, and humidity. Fire intensity, represented by `fire_mag`, serves as a measure of how severe a wildfire is. Wind speed on the day of containment, `Wind_cont`, is an important factor because stronger winds can accelerate fire spread and make containment efforts more difficult. Humidity on the containment day, `Hum_cont`, was included since higher humidity levels can slow fire spread by increasing moisture in vegetation and the surrounding environment. Analyzing these three variables together provides insight into how atmospheric conditions influence wildfire intensity and containment efforts.
-
-For the second pairwise plot, we selected temperature, precipitation, and remoteness to understand how fire conditions are affected by climate and location. Temperature on the day of containment, `Temp_cont`, plays a significant role because higher temperatures dry out vegetation, creating more favorable conditions for fire spread. Precipitation in the seven days prior to containment, `Prec_pre_15`, is relevant since recent rainfall can increase soil and vegetation moisture, which may reduce fire intensity. The remoteness of a fire’s location, `remoteness`, influences how quickly firefighting resources can reach the site, which can affect containment time. Analysis of these variables allow us to better understand how environmental factors and accessibility impact wildfire behavior.
-
-From our pairwise scatterplots, we observed that many relationships between variables do not follow a clear linear trend. One main observation is the vertical clustering of data points in several scatterplots, where points appear stacked on top of one another at specific values. This pattern is evident in fire intensity versus wind speed and fire intensity versus humidity in the first plot, as well as temperature versus precipitation, temperature versus remoteness, and precipitation versus remoteness in the second plot. This clustering suggests that many of the measurements in our dataset are recorded in discrete increments rather than as continuous values. For example, wind speed and humidity may be rounded to the nearest whole number or recorded at set intervals, leading to apparent groupings in the data. Similarly, precipitation data may be stored as categorical or interval-based values rather than precise continuous measurements. This is an important consideration when preparing the dataset for modeling, as data transformation techniques may need to account for these discrete measurement patterns.
-
-```{r}
-ggplot(wildfire_clean, aes(x = fct_infreq(cause_category))) +
-  geom_bar(fill = "cadetblue4", color = "white") +
-  labs(
-    title = "Reported Cause of Wildfires",
-    y = "Cause of Fire",
-    x = "Count"
-  ) +
-  theme_minimal()
-
-wildfire_clean %>%
-  count(stat_cause_descr, sort = TRUE)
-```
-
-Next, to better understand the primary causes of wildfires in our dataset, we examined the stat_cause_descr variable, which provides the reported cause for each fire. The most frequently recorded cause was debris burning (2,821), followed by arson (2,399), miscellaneous causes (1,600), and lightning (1,535). Other causes included equipment use (586), campfires (327), children (240), smoking (213), and powerline-related fires (117). A total of 628 fires were labeled as missing or undefined. Interestingly, we found that many of the top causes (e.g., debris burning, arson, and equipment use) are related to human activity.
-
-The dataset includes 28 distinct vegetation types, each classified by a numerical code. Among these, a few vegetation types dominate the data. The most frequently occurring types are:
-
--   Open Shrubland (code 12) with 3,763 observations (about 26% of the dataset)
-
--   Secondary Tropical Evergreen Broadleaf Forest (code 16) with 3,653 observations (about 26%)
-
--   Polar Desert/Rock/Ice (code 15) with 3,081 observations (about 22%)
-
-Less common vegetation types represented in the data include desert and temperate evergreen needleleaf forests.
-
-```{r}
-table(wildfire_clean$Vegetation)
-
-ggplot(wildfire_clean, aes(x = Vegetation)) +
-  geom_bar(fill = "#74c476") +
-  coord_flip() +
-  labs(title = "Frequency of Vegetation Types", x = "Vegetation Type", y = "Count") +
-  theme_minimal()
-
-veg_table <- table(wildfire_clean$Vegetation)
-veg_percent <- prop.table(veg_table) * 100
-veg_percent
-```
-
-```{r}
-#latitude univariate EDA
-summary(wildfire_clean$latitude)
-ggplot(wildfire_clean, aes(x = latitude)) +
-  geom_histogram(bins = 30, fill = "steelblue", color = "white") +
-  labs(
-    title = "Distribution of Latitude for Wildfires",
-    x = "Latitude",
-    y = "Frequency"
-  ) +
-  theme_minimal()
-```
-
-The latitude of wildfires in the dataset ranges from 17.98° to 69.26°, with a median of 34.84° and a mean of 36.62°. The middle 50% of the data falls between 32.85° and 39.93°, suggesting that most wildfires occur in mid-latitude regions of the United States. This range corresponds to areas that commonly experience wildfires, such as parts of California and other western states.
-
-The distribution of latitudes appears to be centered around the mid-30s to upper-30s, which may reflect the concentration of fire-prone areas in those geographic zones.
-
-```{r}
-# bivariate EDA latitude & fire_size
-ggplot(wildfire_clean, aes(x = latitude, y = log(fire_size))) +
-  geom_point(alpha = 0.5, color = "steelblue") +
-  geom_smooth(method = "lm", se = FALSE, color = "orange") +  # optional regression line
-  labs(
-    title = "Fire Size vs. Latitude",
-    x = "Latitude",
-    y = "Fire Size (acres)"
-  ) +
-  theme_minimal()
-
-cor(wildfire_clean$latitude, wildfire_clean$fire_size, use = "complete.obs")
-```
-
-Most values are 0 mm or -1 mm, likely indicating missing data. The median is 0 mm, while the mean is 14.63 mm, skewed by extreme outliers (up to 2,527 mm).
-
-The distribution is highly right-skewed, with most fires occurring after little to no precipitation, consistent with dry conditions increasing fire risk.
-
-```{r}
-# bivariate EDA for pre_cont_15 and fire_size
-ggplot(wildfire_clean, aes(x = Prec_pre_15, y = fire_size)) +
-  geom_point(alpha = 0.4, color = "steelblue") +
-  geom_smooth(method = "lm", se = FALSE, color = "orange") +
-  labs(
-    title = "Fire Size vs. Precipitation (15 Days Prior)",
-    x = "Precipitation (mm, 15 Days Prior)",
-    y = "Fire Size (acres)"
-  ) +
-  theme_minimal()
-
-wildfire_clean <- wildfire_clean %>%
-  mutate(precip_bin = case_when(
-    Prec_pre_15 <= 0 ~ "0 or less",
-    Prec_pre_15 > 0 & Prec_pre_15 <= 10 ~ "0-10mm",
-    Prec_pre_15 > 10 ~ "10mm+"
-  ))
-
-ggplot(wildfire_clean, aes(x = precip_bin, y = fire_size)) +
-  geom_boxplot(fill = "steelblue") +
-  labs(
-    title = "Fire Size by Precipitation Bins",
-    x = "Precipitation (mm, 15 Days Prior)",
-    y = "Fire Size (acres)"
-  ) +
-  theme_minimal()
-```
-
-The scatterplot of `Prec_pre_15` and `fire_size` shows no strong relationship between prior precipitation and fire size. Most fires occurred with little to no precipitation, and there is substantial variability in fire size regardless of precipitation level. A few extreme precipitation values do not appear to have a significant effect on fire size.
-
-The boxplot comparing precipitation bins (0 or less, 0-10mm, 10mm+) reveals similar distributions of fire size across all groups, with no meaningful differences in medians or spread. This suggests that precipitation up to 15 days prior to a fire may have limited impact on the size of the fire in this dataset.
-
-```{r}
-# Univariate EDA for Temp_pre_30 Variable
-summary(wildfire_clean$Temp_pre_30)
-
-ggplot(wildfire_clean, aes(x = Temp_pre_30)) +
-  geom_histogram(fill = "steelblue", color = "white") +
-  labs(
-    title = "Distribution of Temperature, 30 Days Prior",
-    x = "Temperature (°C, 30 Days Prior)",
-    y = "Frequency"
-  ) +
-  theme_minimal()
-```
-
-The distribution of Temp_pre_30, which represents the temperature at the location of a fire up to 30 days prior, shows a wide range of values, spanning from -49.211°C to 41.678°C. The minimum recorded temperature of -49.211°C is exceptionally low and may indicate an outlier or a potential data entry error, especially considering that there are few locations that can get that could and have a fire. Additionally, the first quartile of -1.000°C suggests that at least 25% of recorded fires happened in temperatures at or below freezing, which could indicate that fires occurred in cold regions or during winter months.
-
-The median temperature of 8.310°C suggests that half of the recorded fires occurred in moderate conditions, while the mean of 9.562°C, which is slightly higher than the median, indicates that the distribution is right-skewed. This means that some extremely high-temperature values may be pulling the average up. The maximum recorded temperature of 41.678°C suggests that some fires took place in extremely hot environments, which does make a lot of sense.
-
-Looking at the histogram, the data appears to be slgihtly right-skewed, with most temperatures falling between 0°C and 25°C, while some extend into negative values as low as -50°C. The presence of extreme negative temperatures raises concerns about outliers or data recording errors, as fires typically occur in warmer conditions. As there is a huge spike in temperatures of 0°C, we will probably need to look more into whether or not these are errors or actual measurements.
-
-```{r}
-#Bivariate EDA for Temp_pre_30 Variable
-ggplot(wildfire_clean, aes(x = Temp_pre_30, y = log(fire_size))) +
-  geom_point(alpha = 0.5, color = "steelblue") +
-  geom_smooth(method = "lm", se = FALSE, color = "orange") +
-  labs(title = "Fire Size vs. Temperature (30 Days Prior)",
-       x = "Temperature (°C)",
-       y = "Fire Size (acres)") +
-  theme_minimal()
-```
-
-The scatter plot shows the relationship between fire size and temperature 30 days prior, with little evidence of a strong correlation. The nearly flat regression line suggests that temperature alone is not a key predictor of fire size. Most fires occurred between 0°C and 25°C, with fire sizes clustered at lower values. There also does seem to be a large amount of fires that are recorded at 20, 30, 40, and 50 acres for fire size indicating that many of these may have been rounded. 
-
-```{r}
-#Bivariate 
-ggplot(wildfire_clean, aes(x = remoteness, y = fire_size)) +
-  geom_point(color = "steelblue") +
-  geom_smooth(method = "lm", se = FALSE, color = "orange") +
-  labs(title = "Fire Size vs. Remoteness",
-       x = "Remoteness (Non-Dimensional Distance)",
-       y = "Fire Size (acres)") +
-  theme_minimal()
-```
-
-The scatter plot illustrates the relationship between fire size and remoteness. The red regression line shows a slight positive trend, suggesting that more remote fires tend to be slightly larger. Most fires occur in areas closer to cities, as indicated by the dense clustering on the left side of the plot. While some larger fires occur in highly remote areas, the overall pattern does not strongly indicate that remoteness is a key driver of fire size.
-
-#### Exploratory Data Analysis - Bivariate EDA
-
-This plot shows the distribution of wildfire sizes across different vegetation types, which represent the dominant land cover where each fire occurred. The median fire size is relatively consistent across most vegetation types, typically falling between 5 and 10 acres. However, certain vegetation categories show greater variability in fire size, particularly type 0 (i.e., Other), type 12 (i.e., Open Shrubland), and type 16 (i.e., Secondary Tropical Evergreen Broadleaf Forest). Additionally, nearly all vegetation types include significant outliers (i.e., fires extending beyond 40 acres). This suggests that while typical fire behavior is similar across land cover types, variability still exists in more extreme cases.
-
-```{r}
-ggplot(wildfire_clean, aes(x = factor(Vegetation), y = fire_size, color = factor(Vegetation))) +
-  geom_boxplot() +
-  labs(
-    title = "Wildfire Size by Vegetation Type",
-    x = "Vegetation Type (coded)",
-    y = "Fire Size (acres)"
-  ) +
-  scale_color_manual(values = colorRampPalette(c("#a3c9a8", "#2e7d32"))(length(unique(wildfire_clean$Vegetation)))) +
-  theme_minimal() +
-  theme(legend.position = "none")
-```
-
-This figure suggests that the relationship between precipitation (15 days prior) and fire size varies across different vegetation types. The slopes of the regression lines differ by vegetation category. This could indicate that precipitation might have differing effects on fire size depending on the vegetation type. Thus, an interaction between precipitation and vegetation type could add to a model predicting fire size.
-
-The variable remoteness, which represents the non-dimensional distance to the closest city, has a distribution ranging from 0.0000 to 0.98899. The minimum value of 0 suggests that some fires occurred basically within cities, while the maximum value of 1 indicating the farthest fire away. However, the fire with value of 1 in remoteness may have been removed when we cleaned the data.
-
-The first quartile of 0.1450 means that 25% of the fires occurred in areas where remoteness was relatively low, suggesting proximity to cities or towns. The median value of 0.2002 indicates that half of the fires took place in areas with remoteness below this threshold, meaning that most fires are moderately close to urban areas rather than in extremely remote locations. However, the mean value of 0.2403 is slightly higher than the median, which suggests that the distribution is right-skewed, meaning that a small number of fires occurred in highly remote areas, pulling the average upward. This skewness is further confirmed by the third quartile (Q3) of 0.3018, showing that 75% of fires occurred in areas with remoteness below this level, while the remaining 25% took place in much more remote regions.
-
-This distribution suggests that most fires tend to occur closer to urban areas rather than in extremely remote locations, but a minority of cases involve fires in highly remote regions.
-
-Looking at the histogram, the distribution is right-skewed, with most observations between 0.1 and 0.3. There is a sharp peak around 0.15, however, indicating that this is about the area most fires occur. As remoteness increases beyond 0.5, the frequency of observations declines significantly, meaning very few fires occurring in extremely remote areas.
-
-We explored the relationship between vegetation type and fire size using a boxplot and summary statistics. The boxplot shows variation in fire size distributions across vegetation types. Notably, vegetation type 0 has the largest spread and the highest median fire size at 5.0 acres. This type also has the highest mean fire size at 11.02 acres, suggesting a tendency for larger fires in this vegetation category.
-
-Vegetation types 12 and 16 also exhibit relatively high median fire sizes (both around 5.0 acres) with mean fire sizes of 10.15 and 9.67 acres, respectively. Conversely, vegetation types 9 and 4 have lower median fire sizes (3.3 and 3.0 acres), along with the lowest mean fire sizes, 8.33 and 8.39 acres, respectively.
-
-Overall, there is noticeable variation in fire size depending on vegetation type. Some vegetation types appear to be more prone to larger fires, which could be due to factors like fuel availability or vegetation density.
