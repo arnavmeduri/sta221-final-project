@@ -181,18 +181,18 @@ wildfire_clean |>
   kable(digits = 2)
 ```
 
-Next, we visualized the distribution of the quantitative variables of interest in our dataset (temperature, relative humidity, and wind speed from 30 days prior to fire discovery, as well as containment time remoteness), along with summary statistics to better understand their scale and variability. Among these predictors, we first examined the distribution of temperature a month before discovery (top left panel), which we observed to be approximately normal and unimodal. (This is consistent with what we would generally expect, since temperature tends to change gradually across different areas rather than clustering at specific values.) The median temperature for wildfire observations in our dataset is 12.97°C and the mean is 13.58°C, with most observations between 6.53°C and 21.36°C, and a range from -49.21°C to 41.68°C.
+Next, we visualized the distribution of the quantitative variables of interest in our dataset (temperature (°C), relative humidity (%), and wind speed from 30 days prior to fire discovery (m/s), and remoteness), along with summary statistics to better understand their scale and variability. We first examined the distribution of temperature a month before discovery (top left panel), which we observed to be approximately normal and unimodal. (This is consistent with what we would generally expect, since temperature tends to change gradually across different areas rather than clustering at specific values.) The median temperature for wildfire observations in our dataset is 12.97°C and the mean is 13.58°C, with most observations between 6.53°C and 21.36°C.
 
-We then examined the distributions of wind speed thirty days before discovery and remoteness (top right and bottom left panels, respectively). Wind speed appears to be very slightly right-skewed and unimodal, while remoteness appears more strongly right-skewed and unimodal. This indicates that most fires occurred relatively close to populated areas (lower remoteness) and that most wind speeds were low to moderate. The median remoteness for observations in our dataset is 0.21 and the mean is 0.25, with most observations between 0.15 and 0.35, and values ranging from 0 to 0.99. The median wind speed for observations in our dataset is 2.89 m/s and the mean is 2.87 m/s, with most observations between 2.06 m/s and 3.76 m/s, and a range from 0 m/s to 29.80 m/s.
+We then examined the distributions of wind speed thirty days before discovery and remoteness (top right and bottom left panels, respectively). Wind speed appears to be very slightly right-skewed and unimodal, while remoteness appears more strongly right-skewed and unimodal. This indicates that most fires occurred relatively close to populated areas (lower remoteness) and that most wind speeds were low to moderate. The median remoteness for observations in our dataset is 0.21 and the mean is 0.25, with most observations between 0.15 and 0.35. The median wind speed for observations in our dataset is 2.89 m/s and the mean is 2.87 m/s, with most observations between 2.06 m/s and 3.76 m/s.
 
-Lastly, we looked at the distribution of relative humidity thirty days before discovery (bottom right panel), which appears to be left-skewed and unimodal. This tells us that lower humidity conditions were more common among wildfires in our data. The median relative humidity for observations in our dataset is 63.53% and the mean is 55.20%, with most observations between 48.80% and 69.97%, and values from 0% to 96%. However, we noticed that a large number of observations in our data recorded a relative humidity of exactly 0%. Given that 0% relative humidity is unlikely under normal atmospheric conditions (since even very dry air typically contains some moisture), we decided to exclude these observations from our analysis.
+Lastly, we looked at the distribution of relative humidity thirty days before discovery (bottom right panel), which appears to be left-skewed and unimodal. This tells us that lower humidity conditions were more common among wildfires in our data. The median relative humidity for observations in our dataset is 63.53% and the mean is 55.20%, with most observations between 48.80% and 69.97%. However, we noticed that a large number of observations in our data recorded a relative humidity of exactly 0%. Given that 0% relative humidity is unlikely under normal atmospheric conditions (since even very dry air typically contains some moisture), we decided to exclude these observations from our analysis.
 
 ```{r}
 #| label: quantitative-univariate-eda
 #| echo: false
 #| warning: false
 #| fig-width: 8
-#| fig-height: 6
+#| fig-height: 5
 
 
 p1 <- ggplot(wildfire_clean, aes(x = Temp_pre_30)) +
@@ -290,16 +290,12 @@ wildfire_clean |>
 
 In addition to examining the distributions of quantitative predictors, we also visualized the distribution of categorical variables of interest in our dataset (i.e., wildfire cause category, vegetation group, region, and precipitation 30 days prior to wildfire discovery). Starting with precipitation 30 days before discovery, we observed that the majority of wildfire observations (5492 observations or 51.5%) corresponded to fires with no precipitation during that period, while the remaining observations (5179 observations or 48.5%) corresponded to fires where precipitation occurred.
 
-Looking more closely at vegetation group, we can see that most fires occurred in forested areas (5181 observations or 48.6%), followed by shrubland (2711 observations or 25.4%) and tundra or barren areas (2590 observations or 24.3%), with relatively few fires in grassland environments (189 observations or 1.77%). Examining wildfire cause categories, we found that a large portion of fires were attributed to human-related causes rather than natural causes. Debris burning accounted for the highest proportion (2821 observations or 26.4%), followed by arson (2399 observations or 22.5%) and other or unknown causes (2228 observations or 20.9%). Natural causes made up a smaller proportion (1535 observations or 14.4%), followed by recreational causes (853 observations or 8.0%) and infrastructure-related causes (835 observations or 7.82%).
-
-Finally, we examined the regional distribution of fires. Most fires in our dataset occurred in the South (6090 observations or 57.1%), followed by the West (2801 observations or 26.2%), Midwest (1228 observations or 11.5%), and Northeast (550 observations or 5.15%). Only two fires (2 observations or less than 0.01%) were categorized as occurring in the "Other" region classification.
-
 ```{r}
 #| label: categorical-dist
 #| echo: false
 #| warning: false
-#| fig-width: 7
-#| fig-height: 5.5
+#| fig-width: 8
+#| fig-height: 5
 
 wildfire_clean <- wildfire_clean |>
   mutate(
@@ -344,6 +340,10 @@ combined_plot
 categorical_vars <- c("cause_category", "Vegetation_group", "region", "Precipitation")
 ```
 
+Looking more closely at vegetation group, we can see that most fires occurred in forested areas (5181 observations or 48.6%), followed by shrubland (2711 observations or 25.4%) and tundra or barren areas (2590 observations or 24.3%), with relatively few fires in grassland environments (189 observations or 1.77%). Examining wildfire cause categories, we found that a large portion of fires were attributed to human-related causes rather than natural causes. Debris burning accounted for the highest proportion (2821 observations or 26.4%), followed by arson (2399 observations or 22.5%) and other or unknown causes (2228 observations or 20.9%). Natural causes made up a smaller proportion (1535 observations or 14.4%), followed by recreational causes (853 observations or 8.0%) and infrastructure-related causes (835 observations or 7.82%).
+
+Finally, we examined the regional distribution of fires. Most fires in our dataset occurred in the South (6090 observations or 57.1%), followed by the West (2801 observations or 26.2%), Midwest (1228 observations or 11.5%), and Northeast (550 observations or 5.15%). Only two fires (2 observations or less than 0.01%) were categorized as occurring in the "Other" region classification.
+
 #### Bivariate EDA
 
 As the next step in our analysis, we examined the relationship between each of our quantitative predictors and fire size to better understand their associations. As we can see in the scatter plot of burned area versus temperature (top left panel), the relationship between these two variables appears to be very weak and slightly positive (i.e., suggesting that larger fires may be slightly more likely at higher temperatures). The relationship also appears to be nonlinear, since most fires in our dataset seem to be pretty small regardless of temperature, and the largest fires (greater than 60 acres in size) most commonly occur between 5°C and 20°C. This tells us that while moderate temperatures may allow for larger fires, temperature alone does not strongly control fire size.
@@ -360,7 +360,7 @@ In general, there is a wide vertical spread (i.e., high variability) in the data
 #| label: fire-size-bivariate
 #| echo: false
 #| warning: false
-#| fig-width: 7
+#| fig-width: 8
 #| fig-height: 5
 
 sp1 <- ggplot(wildfire_clean, aes(x = Temp_pre_30, y = fire_size)) +
@@ -426,7 +426,7 @@ We observed more apparent differences in the distribution of acres burned across
 #| echo: false
 #| warning: false
 #| fig-width: 8
-#| fig-height: 6
+#| fig-height: 5
 
 library(dplyr)
 library(tidyr)
@@ -482,6 +482,8 @@ Since many of our variables of interest relate to environmental conditions and g
 #| label: fire-temp-int
 #| echo: false
 #| warning: false
+#| fig-width: 8
+#| fig-height: 5
 
 ggplot(wildfire_clean, aes(x = Temp_pre_30, y = fire_size)) +
   geom_point(alpha = 0.3, color = "cadetblue4") +
@@ -508,6 +510,8 @@ We were also interested in a potential interaction between vegetation type and p
 #| label: veg-prec-int
 #| echo: false
 #| warning: false
+#| fig-width: 8
+#| fig-height: 5
 
 ggplot(wildfire_clean, aes(x = Vegetation_group, y = fire_size, color = Precipitation)) +
   geom_boxplot(fill = NA, outlier.alpha = 0.6) +
