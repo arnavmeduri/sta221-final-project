@@ -8,7 +8,6 @@ execute:
   message: false
   echo: false
 editor: visual
-bibliography: references.bib
 ---
 
 ## Introduction and Data
@@ -19,7 +18,7 @@ Wildfires are destructive natural disasters that occur regularly across the Unit
 
 [^1]: United States Environmental Protection Agency, "Climate Change Indicators: Wildfires," 2023, https://www.epa.gov/climate-indicators/climate-change-indicators-wildfires.
 
-The dataset used in this analysis is an integrated dataset consisting of over 55,000 wildfire records from the United States between 1992 and 2015, compiled from the Fire Program Analysis system. In addition to wildfire-specific attributes recorded in this database (such as fire size, cause, discovery and containment dates, and location), the dataset was supplemented with additional information from the Forest Service Research Data Archive, NOAA Integrated Surface Hourly Database, vegetation and land cover data from Meiyappan and Jain’s global land-use dataset, and geographic proximity data from SimpleMap’s World Cities Database. As part of our analysis, we used a subset of these variables, including fire size (measured in acres) as the response variable; cause of fire (categorized as missing/undefined, arson, debris burning, miscellaneous, campfire, fireworks, children, lightning, equipment use, smoking, railroad, structure, or powerline); temperature (°C), wind speed (meters per second), relative humidity (%), and precipitation (millimeters) recorded 30 days prior to the fire; vegetation classification based on land cover (with categories Open Shrubland, Polar Desert/Rock/Ice, Secondary Tropical Evergreen Broadleaf Forest, Temperate Evergreen Needleleaf Forest, C3 Grassland/Steppe, Desert, and Water/Rivers); and remoteness (a unitless value between 0 and 1 representing the scaled distance from the nearest urban center).
+The dataset used in this analysis is an integrated dataset consisting of over 55,000 wildfire records from the United States between 1992 and 2015, compiled from the Fire Program Analysis system. In addition to wildfire-specific attributes recorded in this database, the dataset was supplemented with additional information from the Forest Service Research Data Archive, NOAA Integrated Surface Hourly Database, vegetation and land cover data from Meiyappan and Jain’s global land-use dataset, and geographic proximity data from SimpleMap’s World Cities Database. As part of our analysis, we used a subset of these variables, including fire size (measured in acres) as the response variable; cause of fire (categorized as missing/undefined, arson, debris burning, miscellaneous, campfire, fireworks, children, lightning, equipment use, smoking, railroad, structure, or powerline); temperature (°C), wind speed (meters per second), relative humidity (%), and precipitation (millimeters) recorded 30 days prior to the fire; vegetation classification based on land cover (with categories Open Shrubland, Polar Desert/Rock/Ice, Secondary Tropical Evergreen Broadleaf Forest, Temperate Evergreen Needleleaf Forest, C3 Grassland/Steppe, Desert, and Water/Rivers); and remoteness (a unitless value between 0 and 1 representing the scaled distance from the nearest urban center).
 
 #### Hypotheses
 
@@ -476,7 +475,7 @@ ggplot(data = wildfire_clean_long,
 
 #### Potential Interaction Effects
 
-Since many of our variables of interest relate to environmental conditions and geographic location, there are many possible interaction effects among our predictors that could help explain variability in acres burned. As part of our analysis, we looked at two potential interaction effects that we thought might be the most meaningful. First, we analyzed whether there was a potential interaction between temperature and region in explaining variability in burned area, since temperature may influence wildfire size differently across regions (e.g., regions like the Northeast generally experience cooler temperatures, which could lead to different fire behavior compared to hotter, drier regions like the West). As we can see in the visualization below, there does appear to be an interaction effect, since the magnitude and direction of the relationship between temperature and burned area vary across regions. (Specifically, the relationship between temperature and burned area appears to be slightly positive for regions like the Midwest and West, while the trend appears slightly negative for the South and Northeast.) A possible explanation for this could be that, in cooler regions, increases in temperature may support fire spread, while in already hot and humid regions, temperature may not have the same effect due to other limiting factors like vegetation or moisture levels. This interaction would be interesting to look into more formally when modeling fire size to determine whether it significantly improves model performance.
+Since many of our variables of interest relate to environmental conditions and geographic location, there are many possible interaction effects among our predictors that could help explain variability in acres burned. As part of our analysis, we looked at two potential interaction effects that we thought might be the most meaningful. First, we analyzed whether there was a potential interaction between temperature and region in explaining variability in burned area, since temperature may influence wildfire size differently across regions (e.g., regions like the Northeast generally experience cooler temperatures, which could lead to different fire behavior compared to hotter, drier regions like the West). As we can see in the visualization below, there does appear to be an interaction effect, since the magnitude and direction of the relationship between temperature and burned area vary across regions. (Specifically, the relationship between temperature and burned area appears to be slightly positive for regions like the Midwest and West, while the trend appears slightly negative for the South and Northeast.) A possible explanation for this could be that, in cooler regions, increases in temperature may support fire spread, while in already hot and humid regions, temperature may not have the same effect due to other limiting factors like vegetation or moisture levels. This interaction would be interesting to look into more formally when modeling fire size to determine whether it significantly improves model fit.
 
 ```{r}
 #| label: fire-temp-int
@@ -546,15 +545,8 @@ We also checked for influential points based on Cook’s Distance ($D_i > 0.5$),
 ```{r}
 #| label: linear-model
 
-wildfire_clean <- wildfire_clean |> 
-  group_by(region) |> 
-  mutate(
-    Temp_pre_30_region_centered = Temp_pre_30 - mean(Temp_pre_30, na.rm = TRUE)
-  ) |> 
-  ungroup()
-
 exp_fire_int_fit <- lm(
-  log(fire_size) ~ region + Temp_pre_30 + remoteness + Vegetation_group +
+  log(fire_size) ~ region + Temp_pre_30 + remoteness * Vegetation_group +
     Wind_pre_30 + Prec_pre_30 + Hum_pre_30,
   data = wildfire_clean
 )
@@ -589,6 +581,8 @@ The adjusted $R^2$ values were low across all models. The main-effects model wit
 We evaluated prediction error using root mean squared error (RMSE) on the log scale. The RMSE was 1.059 for both `fire_main_fit` and `fire_main_bin`, and slightly lower for the interaction models: 1.057 for `fire_int_fit` and 1.058 for `fire_int_bin`. These values indicate that the average prediction error on the log-transformed scale was around 1.06. On the original scale, this corresponds to a multiplicative prediction error of approximately 2.88 (i.e., $\exp(1.06) \approx 2.88$).
 
 Overall, there were minimal differences in adjusted $R^2$ and RMSE between the models using continuous precipitation and those using a binary indicator. The addition of interaction terms with `Vegetation` slightly increased model complexity without meaningfully improving predictive performance.
+
+## Discussion and Conclusions
 
 ## Appendix
 
@@ -703,4 +697,12 @@ p4 <- ggplot(exp_fire_int_fit_aug, aes(x = Hum_pre_30, y = .resid)) +
       plot.title = element_text(size = 14, hjust = 0, family = "sans")
     )
   )
+```
+
+```{r}
+ggplot(exp_fire_int_fit_aug, aes(x = remoteness, y = .resid)) +
+  geom_point(alpha = 0.2) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(x = "Remoteness", y = "Residuals", title = "Residuals vs. Remoteness") +
+  theme_minimal()
 ```
