@@ -1,3 +1,3 @@
-# Analyzing Factors Associated with AreaBurned by Wildfires in the United States
+# Analyzing Factors Associated with Area Burned by Wildfires in the United States
 by the Info Innovators
 
