@@ -8,7 +8,6 @@ execute:
   message: false
   echo: false
 editor: visual
-bibliography: references.bib
 ---
 
 ## Introduction and Data
@@ -106,7 +105,8 @@ wildfire_clean <- wildfire |>
     fire_size <= quantile(fire_size, 0.75, na.rm = TRUE)
   ) |>
   mutate(
-    mid50_hi = if_else(fire_size > median(fire_size, na.rm = TRUE), 1, 0)
+    mid50_hi = if_else(fire_size > median(fire_size, na.rm = TRUE), 1, 0),
+    mid50_hi = factor(mid50_hi, levels = c(0, 1))
   )
 
 write_csv(wildfire_clean, "data/wildfire_clean.csv")
@@ -703,4 +703,31 @@ p4 <- ggplot(exp_fire_int_fit_aug, aes(x = Hum_pre_30, y = .resid)) +
       plot.title = element_text(size = 14, hjust = 0, family = "sans")
     )
   )
+```
+
+```{r}
+
+fire_log_fit <- glm(mid50_hi ~ region + Temp_pre_30_region_centered + remoteness + Vegetation_group +
+    Wind_pre_30 + Vegetation_group * Prec_pre_30 + Hum_pre_30 + putout_time_num +
+    cause_category, data = wildfire_clean, family = "binomial")
+
+tidy(fire_log_fit, conf.int = TRUE) |>
+  kable(digits = 3)
+```
+
+```{r}
+
+
+fire_log_aug <- augment(fire_log_fit)
+
+roc_curve_data <- fire_log_aug |>
+  roc_curve(mid50_hi, .fitted, event_level = "second")
+
+autoplot(roc_curve_data)
+```
+
+```{r}
+
+fire_log_aug |>
+  roc_auc(mid50_hi, .fitted, event_level = "second")
 ```
