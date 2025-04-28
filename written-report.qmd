@@ -574,20 +574,6 @@ glance(fire_linear_fit)
 sqrt(mean(resid(fire_linear_fit)^2))
 ```
 
-### Predictive Modeling
-
-For the predictive model, we fit a
-
-```{r}
-
-fire_log_fit <- glm(mid50_hi ~ region + remoteness + Vegetation_group * Prec_pre_15 + 
-                   Wind_pre_15 + Temp_pre_15 + Hum_pre_15, data = wildfire_clean,
-                   family = "binomial")
-
-tidy(fire_log_fit, conf.int = TRUE) |>
-  kable(digits = 3)
-```
-
 ## Results
 
 ```{r}
@@ -736,6 +722,20 @@ ggplot(fire_linear_fit_aug, aes(x = remoteness, y = .resid)) +
 
 ```{r}
 
+fire_log_fit <- glm(mid50_hi ~ region + remoteness + Vegetation_group * Prec_pre_15 + 
+                   Wind_pre_15 + Temp_pre_15 + Hum_pre_15, data = wildfire_clean,
+                   family = "binomial")
+
+tidy(fire_log_fit, conf.int = TRUE) |>
+  kable(digits = 3)
+```
+
+The odds of a large fire for those in the South West region are expected to be 1.20 (exp{0.182}) times the odds for those in the baseline region, holding all other variables constant. The odds of a large fire are expected to be 0.96 times the odds for each 0.1-unit increase in remoteness (or 10% increase on the 0–1 scale), holding all other variables constant.
+
+After adjusting for other factors, fires in the Northeast had significantly lower odds of being large, while those in the Southwest had higher odds relative to the reference region. Grassland and Shrubland vegetation types were associated with higher odds of large fires. Greater remoteness significantly decreased fire size odds, and higher wind speeds increased the likelihood of a large fire. Temperature showed a small but significant negative association with fire size. There was some indication of interaction between precipitation and vegetation type (particularly Grassland and Shrubland), though the evidence was not strong.
+
+```{r}
+
 
 fire_log_aug <- augment(fire_log_fit)
 
@@ -757,7 +757,7 @@ fire_log_aug |>
 #| fig-width: 8
 #| fig-height: 5
 
-par(mfrow = c(2, 2))  # 2 rows, 2 columns
+par(mfrow = c(2, 2))
 
 emplogitplot1(mid50_hi ~ Temp_pre_15, data = wildfire_clean, ngroups = 12)
 title(main = "Temperature (15 Days Prior)")
@@ -771,6 +771,23 @@ title(main = "Wind Speed (15 Days Prior)")
 emplogitplot1(mid50_hi ~ remoteness, data = wildfire_clean, ngroups = 12)
 title(main = "Remoteness (Scaled Distance)")
 
-par(mfrow = c(1, 1))  # Reset to default
+par(mfrow = c(1, 1))
 
 ```
+
+Overall, the plots do not display strong deviations from linearity, and the assumption of linearity in the log-odds seems reasonably met for these predictors. The randomness assumption of logistic regression is satisfied because we can reasonably assume that our dataset is representative of the population of wildfires in the United States. DO THE OTHER ASSUMPTION SAME AS LIN REG
+
+```{r}
+
+fire_log_full <- fire_log_fit
+
+fire_log_reduced <- glm(mid50_hi ~ region + remoteness + 
+                   Wind_pre_15 + Temp_pre_15 + Hum_pre_15, data = wildfire_clean,
+                   family = "binomial")
+
+anova(fire_log_reduced, fire_log_full, test = "Chisq") |> 
+  tidy() |> 
+  kable(digits = 3)
+```
+
+A drop-in-deviance test was used to compare a reduced logistic regression model with a full model that included interaction terms between vegetation type and precipitation. The test yielded a chi-squared statistic of 131.68 with 13 degrees of freedom, resulting in a p-value of \< 0.001. We reject the null hypothesis and conclude that the additional interact term in the full model is a useful predictor for the model.
