@@ -23,7 +23,7 @@ editor: visual
 
 #### Background and Data Description
 
-Wildfires are destructive natural disasters that occur regularly across the United States. According to the EPA, the U.S. has averaged approximately 70,000 wildfires per year since 1983[^1]. Although fire is a natural part of many ecosystems, wildfires have important economic and environmental consequences (e.g., property destruction, environmental degradation, and human health impacts). After learning about recent wildfire incidents in California and western North Carolina, we became interested in better understanding the factors that contribute to the likelihood that a wildfire burns a greater-than-typical area, and the factors that help explain variability in the continuous outcome of burned area. With wildfires affecting many parts of the country, identifying the factors associated with the extent of area burned can help inform decisions by wildfire management agencies. In light of this, we focused on two primary research questions: (a) What factors known before a wildfire has occurred are most strongly associated with the likelihood that a fire burns a greater-than-typical area? and (b) What overall factors (including those available after a wildfire) help explain variability in the continuous size of the burned area? To answer these research questions, we conducted exploratory data analysis and fitted both logistic and linear regression models to examine associations between wildfire characteristics and burned area.
+Wildfires are destructive natural disasters that occur regularly across the United States. According to the EPA, the U.S. has averaged approximately 70,000 wildfires per year since 1983[^1]. Although fire is a natural part of many ecosystems, wildfires have important economic and environmental consequences (e.g., property destruction, environmental degradation, and human health impacts). After recent wildfire incidents in California and western North Carolina, we became interested in better understanding the factors that contribute to the likelihood that a wildfire burns a greater-than-typical area and the factors that help explain variability in the continuous outcome of burned area. Consequently, identifying the factors associated with the extent of area burned can help inform decisions by wildfire management agencies. In light of this, we focused on two primary research questions: (a) What factors known before a wildfire has occurred are most strongly associated with the likelihood that a fire burns a greater-than-typical area? and (b) What overall factors (including those available after a wildfire) help explain variability in the continuous size of the burned area? To answer these research questions, we conducted exploratory data analysis and fitted both logistic and linear regression models to examine associations between wildfire characteristics and burned area.
 
 [^1]: United States Environmental Protection Agency, "Climate Change Indicators: Wildfires," 2023, https://www.epa.gov/climate-indicators/climate-change-indicators-wildfires.
 
@@ -274,14 +274,12 @@ In addition to examining the distributions of quantitative predictors, we also v
 
 #### Bivariate EDA
 
-As the next step in our analysis, we examined the relationship between each of our quantitative predictors and fire size to better understand their associations. In the scatterplot of burned area versus temperature (top left panel), the relationship appears very weak and slightly positive (i.e., larger fires may be slightly more likely at higher temperatures), but nonlinear, since most fires were small across the temperature range, and the largest fires (over 60 acres) tended to occur between 5 °C and 20 °C. The scatterplot of relative humidity versus burned area (top right panel) also shows a very weak, highly nonlinear, and slightly negative relationship, with fires of all sizes occurring across the full humidity range and the largest fires more common between 25% and 75% humidity. For wind speed (bottom left panel), the relationship appears very weak, slightly positive, and nonlinear; most fires occurred at lower wind speeds, and most larger fires (over 40 acres) were concentrated below 5 m/s, suggesting that higher wind speeds were not consistently associated with larger burned areas. In the scatterplot of remoteness versus burned area (bottom right panel), we observe a weak, slightly positive, and nonlinear relationship, with the largest fires occurring between remoteness values of 0.25 and 0.50 and relatively few large fires at very high remoteness values above 0.75. Overall, the wide vertical spread of data points around the lines of best fit for all predictors suggests that these quantitative predictors have limited predictive power for burned area when considered individually, which is expected given that wildfire size is influenced by many factors beyond the variables available in our dataset.
-
 ```{r}
 #| label: fire-size-bivariate
 #| echo: false
 #| warning: false
 #| fig-width: 8
-#| fig-height: 4
+#| fig-height: 5
 #| out.width: "90%"
 
 sp1 <- ggplot(wildfire_clean, aes(x = Temp_pre_30, y = fire_size)) +
@@ -338,7 +336,7 @@ sp4 <- ggplot(wildfire_clean, aes(x = remoteness, y = fire_size)) +
 
 ```
 
-As part of our bivariate EDA, we also analyzed the relationship between each of our categorical variables of interest and burned area to better understand differences in fire size across groups. We can see from the visualization (top left panel) that the distribution of acres burned is relatively similar for all wildfire cause categories, with medians between 4.00 and 6.00 acres, means between 9.02 and 13.74 acres, and outliers beyond the 30-acre mark across all cause types. This indicates that cause category on its own does not explain much variability in fire size. We observed a similar pattern between observations corresponding to no precipitation 30 days before discovery and observations corresponding to precipitation (top right panel), with both groups showing medians of 5.00 acres and means of 12.32 acres (no precipitation) and 11.38 acres (precipitation), although there was slightly more spread in the middle 50% of fires with no precipitation. We observed more apparent differences in the distribution of acres burned across different regions and vegetation groups (bottom left and bottom right panels, respectively). In particular, the Northeast had a lower median (3.00 acres) and mean (6.04 acres) compared to other regions, with much less variability in the middle 50% of fires and most outliers limited to about the 40-acre mark. In contrast, distributions for the West, South, and Midwest were more similar, with medians between 5.00 and 6.00 acres, means between 12.00 and 13.00 acres, and many outliers beyond the 30-acre mark. For vegetation type, distributions were fairly similar across categories, although grasslands had a slightly lower median (4.00 acres) and mean (8.43 acres) compared to other vegetation groups, with somewhat fewer extreme outliers. Overall, region and vegetation group seem to explain more variability in fire size compared to cause category or precipitation, and could be useful predictors in modeling fire size.
+As the next step in our analysis, we examined the relationship between each of our quantitative predictors and fire size to better understand their associations. In the scatterplot of burned area versus temperature (top left panel), the relationship appears very weak and slightly positive (i.e., larger fires may be slightly more likely at higher temperatures), but nonlinear, since most fires were small across the temperature range, and the largest fires (over 60 acres) tended to occur between 5 °C and 20 °C. The scatterplot of relative humidity versus burned area (top right panel) also shows a very weak, highly nonlinear, and slightly negative relationship, with fires of all sizes occurring across the full humidity range and the largest fires more common between 25% and 75% humidity. For wind speed (bottom left panel), the relationship appears very weak, slightly positive, and nonlinear; most fires occurred at lower wind speeds, and most larger fires (over 40 acres) were concentrated below 5 m/s, suggesting that higher wind speeds were not consistently associated with larger burned areas. In the scatterplot of remoteness versus burned area (bottom right panel), we observe a weak, slightly positive, and nonlinear relationship, with the largest fires occurring between remoteness values of 0.25 and 0.50 and relatively few large fires at very high remoteness values above 0.75. Overall, the wide vertical spread of data points around the lines of best fit for all predictors suggests that these quantitative predictors have limited predictive power for burned area when considered individually, which is expected given that wildfire size is influenced by many factors beyond the variables available in our dataset.
 
 ```{r}
 #| label: categorical-bivariate-dist
@@ -397,6 +395,8 @@ ggplot(data = wildfire_clean_long,
   )
 ```
 
+As part of our bivariate EDA, we also analyzed the relationship between each of our categorical variables of interest and burned area to better understand differences in fire size across groups. We can see from the visualization (top left panel) that the distribution of acres burned is relatively similar for all wildfire cause categories, with medians between 4.00 and 6.00 acres, means between 9.02 and 13.74 acres, and outliers beyond the 30-acre mark across all cause types. This indicates that cause category on its own does not explain much variability in fire size. We observed a similar pattern between observations corresponding to no precipitation 30 days before discovery and observations corresponding to precipitation (top right panel), with both groups showing medians of 5.00 acres and means of 12.32 acres (no precipitation) and 11.38 acres (precipitation), although there was slightly more spread in the middle 50% of fires with no precipitation. We observed more apparent differences in the distribution of acres burned across different regions and vegetation groups (bottom left and bottom right panels, respectively). In particular, the Northeast had a lower median (3.00 acres) and mean (6.04 acres) compared to other regions, with much less variability in the middle 50% of fires and most outliers limited to about the 40-acre mark. In contrast, distributions for the West, South, and Midwest were more similar, with medians between 5.00 and 6.00 acres, means between 12.00 and 13.00 acres, and many outliers beyond the 30-acre mark. For vegetation type, distributions were fairly similar across categories, although grasslands had a slightly lower median (4.00 acres) and mean (8.43 acres) compared to other vegetation groups, with somewhat fewer extreme outliers. Overall, region and vegetation group seem to explain more variability in fire size compared to cause category or precipitation, and could be useful predictors in modeling fire size.
+
 #### Potential Interaction Effects
 
 Since many of our variables of interest relate to environmental conditions and geographic location, there are potential interaction effects among our predictors that could influence acres burned. As part of our analysis, we were interested in a potential interaction between vegetation type and precipitation, since vegetation and fuel moisture could influence burned area together. Through our EDA, we observed that acres burned did not seem to vary much across different precipitation groups within each vegetation type. (A more detailed analysis of this pattern is provided in the Appendix.)
@@ -411,7 +411,7 @@ To guide predictor selection for the explanatory model, we used a forward select
 
 #### Logistic Regression
 
-To guide variable selection for the predictive model, we fit a full model including all variables of interest. This approach was appropriate because our dataset contained a limited number of predictors corresponding to information available prior to fire discovery, making it practical to include all relevant variables rather than selecting a smaller subset. Specifically, our initial logistic regression model predicted the likelihood that a wildfire would burn a greater-than-typical area based on temperature, humidity, wind speed, precipitation, vegetation type, the interaction between vegetation type and precipitation, remoteness, and region. After fitting the model, we assessed whether the key assumptions for logistic regression (i.e., linearity, randomness, and independence) were satisfied. Wildfire records in our dataset can reasonably be treated as independent because, in our assessment of the independence condition for linear regression, we observed no spatial correlations between residuals and geographic location. The randomness assumption was satisfied because the wildfire data were compiled from a large national database covering a wide range of fires across the United States between 1992 and 2015, making it reasonable to assume the dataset is representative of the broader wildfire population. Lastly, the linearity condition appeared reasonably satisfied, as empirical logit plots for the quantitative predictors did not display strong deviations from linearity, and the assumption of linearity in the log-odds was met. A detailed assessment of model diagnostics (empirical logit plots, assessment of logistic regression conditions) can be found in the Appendix.
+To guide variable selection for the predictive model, we fit a full model including all variables of interest. This approach was appropriate because our dataset contained a limited number of predictors corresponding to information available prior to fire discovery, making it practical to include all relevant variables rather than selecting a smaller subset. Specifically, our initial logistic regression model predicted the likelihood that a wildfire would burn a greater-than-typical area based on temperature, humidity, wind speed, precipitation, vegetation type, the interaction between vegetation type and precipitation, remoteness, and region. After fitting the model, we determined that the key assumptions for logistic regression (linearity, randomness, and independence) were satisfied. A detailed assessment of model diagnostics (empirical logit plots, assessment of logistic regression conditions) can be found in the Appendix.
 
 ## Results
 
@@ -467,7 +467,7 @@ Our final logistic regression model predicting whether a wildfire burns a greate
 
 Our analysis used both multiple linear regression and logistic regression to understand factors associated with wildfire size in the United States. The multiple linear regression model, which predicted log-transformed fire size, found that physical factors like vegetation type, wind speed, precipitation, temperature, and humidity and other factors including region, remoteness, fire cause, and containment time were significant predictors, though the model explained only about 5% of the variability in fire size. The logistic regression model, which predicted the likelihood that a wildfire burned a greater-than-typical area, used similar predictors except the cause of the fire, but did not have a very effective classification ability (AUC = 0.569). In both models, fires in shrubland and grassland were associated with larger burned areas, while fires in the Northeast tended to be smaller. Greater wind speeds slightly increased fire size, and greater remoteness was associated with smaller fires.
 
-There were several limitations to our analysis. While the number of fires in the dataset was massive, comprehensive data on those fires was often limited, which likely contributed to the low explanatory power of our models. Because the data spanned more than two decades, changes over time in climate patterns, land use, and fire management practices could have introduced variability that our models did not account for. Although most model assumptions were satisfied after transformations, there were issues with non-constant variance that could affect the reliability of our conclusions.
+There were several limitations to our analysis. While the number of fires in the dataset was massive, comprehensive data on those fires was often limited, which likely contributed to the low explanatory power of our models. Because the data spanned more than two decades, changes over time in climate patterns, land use, and fire management practices could have introduced variability that our models did not account for. Although most model assumptions were satisfied after transformations, there were issues with non- variance that could affect the reliability of our conclusions.
 
 Future work could focus a lot on improving data by collecting more data points for each of the fires. While technology can be limited in this aspect, especially for fires that may be in remote regions, better quality data could be very effective in helping to understand where resources need to go to put out fires and solve this important problem. Despite these limitations, our models did uncover some important factors of wildfire size and confirmed the need for more detailed data to support effective wildfire prediction and management.
 
@@ -484,7 +484,7 @@ Looking more closely at vegetation group, we can see that most fires occurred in
 #| echo: false
 #| warning: false
 #| fig-width: 8
-#| fig-height: 6
+#| fig-height: 5
 
 base_theme <- theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
@@ -554,12 +554,12 @@ ggplot(wildfire_clean, aes(x = Vegetation_group, y = fire_size, color = Precipit
 
 #### Methods - Explanatory Model
 
-A scatterplot of residuals vs. fitted values for our explanatory model is shown below. Given that the initial model we fit had a clear violation of constant variance (an increase in the variability of residuals as fitted values increased), we applied a variance-stabilizing (i.e., logarithmic) transformation to the response variable. We observed an improvement in the spread of residuals (more uniform spread across the range of fitted values) as well as a slight improvement in model fit (an increase in adjusted $R^2$) after applying this transformation. Because there was also a clear pattern in the residuals (i.e., they were not randomly scattered around $residuals = 0$), we examined scatterplots of fitted values versus each of the predictors and observed no clear nonlinear trends. As a result, we did not transform our predictors. We also did not observe any influential points ($D_i > 0.5$) in our data, so no observations were removed. Lastly, we observed two distinct groupings in the scatterplot of residuals vs. fitted values (one group with fitted values less than 1.5 and one group with fitted values generally above 1.5). We found that a large portion of this separation could be explained by region, so we fit separate linear regression models for different regional groups. However, this approach did not lead to a meaningful increase in explanatory power, so we retained a single model for all observations.
+A scatterplot of residuals vs. fitted values for our explanatory model is shown below. Given that the initial model we fit had a clear violation of constant variance (an increase in the variability of residuals as fitted values increased), we applied a variance-stabilizing (i.e., logarithmic) transformation to the response variable. We observed an improvement in the spread of residuals (more uniform spread across the range of fitted values) as well as a slight improvement in model fit (an increase in adjusted $R^2$) after applying this transformation. Because there was also a clear pattern in the residuals (i.e., they were not randomly scattered around $residuals = 0$), we examined scatterplots of fitted values versus each of the predictors and observed no clear nonlinear trends. As a result, we did not transform our predictors. We also did not observe any influential points ($D_i > 0.5$) in our data, so no observations were removed. Lastly, we observed two distinct groupings in the scatterplot of residuals vs. fitted values (one group with fitted values less than 1.5 and one group with fitted values generally above 1.5). We found that a large portion of this separation could be explained by region, so we fit separate linear regression models for different regional groups. However, this approach did not lead to a meaningful increase in explanatory power, so we retained a single model for all observations. From our work, we deem that constant variance and linearity are sufficiently satisfied.
 
 ```{r}
 #| label: residuals-fitted-vals-plot
 #| fig-width: 8
-#| figh-height: 6
+#| figh-height: 5
 
 fire_linear_fit_aug <- augment(fire_linear_fit)
 
@@ -608,6 +608,22 @@ p4 <- ggplot(fire_linear_fit_aug, aes(x = Hum_pre_15_cent, y = .resid)) +
   )
 ```
 
+While the distribution of residuals is skewed right, we have far more than 30 observation, so we can assume normality is satisfied.
+
+```{r}
+#| echo: false
+#| warning: false
+#| fig-width: 8
+#| fig-height: 4
+
+ggplot(fire_linear_fit_aug, aes(x = .resid)) +
+geom_histogram() +
+labs(
+title = "Histogram of Residuals",
+x = "Residuals",
+y = "Frequency")
+```
+
 We also screened for potential collinearity between our predictors and, while we initially observed some concerning multicollinearity between levels of our region variable ($VIF > 5$), we addressed this by collapsing the South and West levels of the variable together and refitting the model based on the recoded version. All of the VIFs for the updated model are less than 5, indicating no issues with multicollinearity among the predictors.
 
 ```{r}
@@ -628,6 +644,11 @@ Lastly, we looked for any spatial and temporal correlations in residuals and fou
 
 ```{r}
 #| label: spatial-distribution-residuals
+#| echo: false
+#| warning: false
+#| fig-width: 8
+#| fig-height: 5
+
 
 exp_fire_fit_aug <- augment(exp_fire_fit)
 
@@ -678,7 +699,7 @@ ggplot(fire_linear_fit_aug, aes(x = disc_pre_year, y = .resid)) +
 
 #### Methods - Predictive Model
 
-The empirical logit plots for the quantitative predictors of our logistic regression model are shown below. As we can see, the plots do not display strong deviations from linearity, which tells us that the assumption of linearity in the log-odds appears to be met for these predictors (with no obvious patterns suggesting that non-linear transformations would be necessary, as the relationships do not appear curvilinear, quadratic, or otherwise non-linear in the logit scale). Thus, the linearity condition appears to be reasonably satisfied.
+Wildfire records in our dataset can reasonably be treated as independent because, in our assessment of the independence condition for linear regression, we observed no spatial correlations between residuals and geographic location. The randomness assumption was satisfied because the wildfire data were compiled from a large national database covering a wide range of fires across the United States between 1992 and 2015, making it reasonable to assume the dataset is representative of the broader wildfire population. Lastly, the linearity condition appears to be reasonably satisfied, as empirical logit plots for the quantitative predictors did not display strong deviations from linearity, and the assumption of linearity in the log-odds was met.
 
 ```{r}
 #| echo: false
