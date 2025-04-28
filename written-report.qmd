@@ -713,9 +713,15 @@ The estimated multiple linear regression equation predicting log-transformed fir
 
 $$
 \begin{aligned}
-\widehat{\log(\text{Fire Size})} =\ &\ 2.00 - 0.94\,\cdot\,\text{Region (Northeast, South/West)} - 0.26\,\cdot\,\text{Cause Category (Debris, Infrastructure, Other/Unknown, Recreational)} - 0.31\,\cdot\,\text{Remoteness} \\
-&+ 0.19\,\cdot\,\text{Vegetation Group (Grassland, Shrubland, Tundra/Barren)} + 0.03\,\cdot\,\text{Wind Speed (15 days prior)} - 0.00\,\cdot\,\text{Temperature (15 days prior)} \\
-&+ 0.01\,\cdot\,\text{Containment Time} - 0.14\,\cdot\,(\text{Vegetation Group} \times \text{Precipitation (15 days prior)})
+\widehat{\log(\text{Fire Size})} =\ &\ 2.00 \\
+&- 0.94\,\cdot\,\text{Region (Northeast, South/West)} \\
+&- 0.26\,\cdot\,\text{Cause Category (Debris, Infrastructure, Other/Unknown, Recreational)} \\
+&- 0.31\,\cdot\,\text{Remoteness} \\
+&+ 0.19\,\cdot\,\text{Vegetation Group (Grassland, Shrubland, Tundra/Barren)} \\
+&+ 0.03\,\cdot\,\text{Wind Speed (15 days prior)} \\
+&- 0.00\,\cdot\,\text{Temperature (15 days prior)} \\
+&+ 0.01\,\cdot\,\text{Containment Time} \\
+&- 0.14\,\cdot\,(\text{Vegetation Group} \times \text{Precipitation (15 days prior)})
 \end{aligned}
 $$
 
@@ -738,11 +744,20 @@ The estimated logistic regression equation predicting the log-odds that a wildfi
 
 $$
 \begin{aligned}
-\log\left(\frac{\hat{\pi}}{1-\hat{\pi}}\right) =\ &\ -0.22 - 1.83\,\cdot\,\text{Northeast region} + 0.18\,\cdot\,\text{South/West region} \\
-&- 0.41\,\cdot\,\text{Remoteness} + 0.64\,\cdot\,\text{Grassland vegetation} + 0.21\,\cdot\,\text{Shrubland vegetation} + 0.09\,\cdot\,\text{Tundra/Barren vegetation} \\
-&+ 0.03\,\cdot\,\text{Precipitation (15 days prior)} + 0.04\,\cdot\,\text{Wind speed (15 days prior)} - 0.00\,\cdot\,\text{Temperature (15 days prior)} \\
-&- 0.00\,\cdot\,\text{Relative humidity (15 days prior)} - 0.64\,\cdot\,(\text{Grassland vegetation} \times \text{Precipitation}) \\
-&- 0.19\,\cdot\,(\text{Shrubland vegetation} \times \text{Precipitation}) + 0.01\,\cdot\,(\text{Tundra/Barren vegetation} \times \text{Precipitation})
+\log\left(\frac{\hat{\pi}}{1-\hat{\pi}}\right) =\ &\ -0.22 \\
+&- 1.83\,\cdot\,\text{Northeast region} \\
+&+ 0.18\,\cdot\,\text{South/West region} \\
+&- 0.41\,\cdot\,\text{Remoteness} \\
+&+ 0.64\,\cdot\,\text{Grassland vegetation} \\
+&+ 0.21\,\cdot\,\text{Shrubland vegetation} \\
+&+ 0.09\,\cdot\,\text{Tundra/Barren vegetation} \\
+&+ 0.03\,\cdot\,\text{Precipitation (15 days prior)} \\
+&+ 0.04\,\cdot\,\text{Wind speed (15 days prior)} \\
+&- 0.00\,\cdot\,\text{Temperature (15 days prior)} \\
+&- 0.00\,\cdot\,\text{Relative humidity (15 days prior)} \\
+&- 0.64\,\cdot\,(\text{Grassland vegetation} \times \text{Precipitation}) \\
+&- 0.19\,\cdot\,(\text{Shrubland vegetation} \times \text{Precipitation}) \\
+&+ 0.01\,\cdot\,(\text{Tundra/Barren vegetation} \times \text{Precipitation})
 \end{aligned}
 $$
 
@@ -793,5 +808,5 @@ anova(fire_log_reduced, fire_log_full, test = "Chisq") |>
   ) |>
   select(Model, `Residual df`, `Residual Deviance`, `Test df`, `Test Deviance`, `p-value`) |>
   kable(digits = 3, format = "latex", booktabs = TRUE, align = "c", escape = FALSE) |> 
-  kable_styling(full_width = FALSE, font_size = 7, latex_options = c("hold_position"))
+  kable_styling(full_width = FALSE, font_size = 7)
 ```
