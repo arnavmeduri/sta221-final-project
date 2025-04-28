@@ -47,6 +47,11 @@ library(GGally)
 library(tidyverse)
 library(tidymodels)
 library(rms)
+library(faraway)
+library(tidyverse)
+library(kableExtra)
+library(Stat2Data)
+
 
 wildfire <- read_csv("data/FW_Veg_Rem_Combined.csv")
 ```
@@ -576,7 +581,8 @@ For the predictive model, we fit a
 ```{r}
 
 fire_log_fit <- glm(mid50_hi ~ region + remoteness + Vegetation_group * Prec_pre_15 + 
-                   Wind_pre_15 + Temp_pre_15 + Hum_pre_15, data = wildfire_clean, family = "binomial")
+                   Wind_pre_15 + Temp_pre_15 + Hum_pre_15, data = wildfire_clean,
+                   family = "binomial")
 
 tidy(fire_log_fit, conf.int = TRUE) |>
   kable(digits = 3)
@@ -743,4 +749,28 @@ autoplot(roc_curve_data)
 
 fire_log_aug |>
   roc_auc(mid50_hi, .fitted, event_level = "second")
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| fig-width: 8
+#| fig-height: 5
+
+par(mfrow = c(2, 2))  # 2 rows, 2 columns
+
+emplogitplot1(mid50_hi ~ Temp_pre_15, data = wildfire_clean, ngroups = 12)
+title(main = "Temperature (15 Days Prior)")
+
+emplogitplot1(mid50_hi ~ Hum_pre_15, data = wildfire_clean, ngroups = 12)
+title(main = "Relative Humidity (15 Days Prior)")
+
+emplogitplot1(mid50_hi ~ Wind_pre_15, data = wildfire_clean, ngroups = 12)
+title(main = "Wind Speed (15 Days Prior)")
+
+emplogitplot1(mid50_hi ~ remoteness, data = wildfire_clean, ngroups = 12)
+title(main = "Remoteness (Scaled Distance)")
+
+par(mfrow = c(1, 1))  # Reset to default
+
 ```
