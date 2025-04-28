@@ -11,6 +11,7 @@ format:
       text: |
         \usepackage{float}
         \floatplacement{table}{H}
+        \usepackage{placeins}
 execute: 
   warning: false
   message: false
@@ -181,44 +182,7 @@ p2 <- wildfire_clean |>
   )
 ```
 
-```{r}
-#| label: fire-size-summary-stats
-#| echo: false
-#| warning: false
-
-table1 <- wildfire_clean |>
-  summarise(
-    Count = n(),
-    Min = min(fire_size, na.rm = TRUE),
-    Q1 = quantile(fire_size, 0.25, na.rm = TRUE),
-    Median = median(fire_size, na.rm = TRUE),
-    Mean = mean(fire_size, na.rm = TRUE),
-    Q3 = quantile(fire_size, 0.75, na.rm = TRUE),
-    Max = max(fire_size, na.rm = TRUE),
-    SD = sd(fire_size, na.rm = TRUE)
-  )
-
-table2 <- wildfire_clean |>
-  group_by(mid50_hi) |>
-  summarise(
-    Count = n(),
-    Proportion = n() / nrow(wildfire_clean)
-  ) |>
-  mutate(Proportion = scales::percent(Proportion)) |>
-  rename(
-    "Fire Size Group" = mid50_hi,
-    "Count" = Count,
-    "Proportion" = Proportion
-  )
-
-kable(table1, digits = 2, format = "latex", booktabs = TRUE) |>
-  kable_styling(full_width = FALSE, font_size = 7)
-
-kable(table2, digits = 2, format = "latex", booktabs = TRUE) |>
-  kable_styling(full_width = FALSE, font_size = 7)
-```
-
-Next, we visualized the distribution of the quantitative variables of interest in our dataset (temperature (°C), relative humidity (%), and wind speed from 30 days prior to fire discovery (m/s), and remoteness), along with summary statistics to better understand their scale and variability. We first examined the distribution of temperature a month before discovery (top left panel), which we observed to be approximately normal and unimodal. (This is consistent with what we would generally expect, since temperature tends to change gradually across different areas rather than clustering at specific values.) The median temperature for wildfire observations in our dataset is 12.97 °C and the mean is 13.58°C, with most observations between 6.53 °C and 21.36 °C. We then examined the distributions of wind speed thirty days before discovery and remoteness (top right and bottom left panels, respectively). Wind speed appears to be very slightly right-skewed and unimodal, while remoteness appears more strongly right-skewed and unimodal. This indicates that most fires occurred relatively close to populated areas (lower remoteness) and that most wind speeds were low to moderate. The median remoteness for observations in our dataset is 0.21 and the mean is 0.25, with most observations between 0.15 and 0.35. The median wind speed for observations in our dataset is 2.89 m/s and the mean is 2.87 m/s, with most observations between 2.06 m/s and 3.76 m/s. Lastly, we looked at the distribution of relative humidity thirty days before discovery (bottom right panel), which appears to be left-skewed and unimodal. This tells us that lower humidity conditions were more common among wildfires in our data. The median relative humidity for observations in our dataset is 63.53% and the mean is 55.20%, with most observations between 48.80% and 69.97%. However, we noticed that a large number of observations in our data recorded a relative humidity of exactly 0%. Given that 0% relative humidity is unlikely under normal atmospheric conditions (since even very dry air typically contains some moisture), we decided to exclude these observations from our analysis.
+Next, we visualized the distribution of the quantitative variables of interest in our dataset (temperature (°C), relative humidity (%), and wind speed from 30 days prior to fire discovery (m/s), and remoteness). We first examined the distribution of temperature a month before discovery (top left panel), which we observed to be approximately normal and unimodal. (This is consistent with what we would generally expect, since temperature tends to change gradually across different areas rather than clustering at specific values.) The median temperature for wildfire observations in our dataset is 12.97 °C and the mean is 13.58 °C, with most observations between 6.53 °C and 21.36 °C. We then examined the distributions of wind speed thirty days before discovery and remoteness (top right and bottom left panels, respectively). Wind speed appears to be very slightly right-skewed and unimodal, while remoteness appears more strongly right-skewed and unimodal. This indicates that most fires occurred relatively close to populated areas (lower remoteness) and that most wind speeds were low to moderate. The median remoteness for observations in our dataset is 0.21 and the mean is 0.25, with most observations between 0.15 and 0.35. The median wind speed for observations in our dataset is 2.89 m/s and the mean is 2.87 m/s, with most observations between 2.06 m/s and 3.76 m/s. Lastly, we looked at the distribution of relative humidity thirty days before discovery (bottom right panel), which appears to be left-skewed and unimodal. This tells us that lower humidity conditions were more common among wildfires in our data. The median relative humidity for observations in our dataset is 63.53% and the mean is 55.20%, with most observations between 48.80% and 69.97%. However, we noticed that a large number of observations in our data recorded a relative humidity of exactly 0%. Given that 0% relative humidity is unlikely under normal atmospheric conditions (since even very dry air typically contains some moisture), we decided to exclude these observations from our analysis.
 
 ```{r}
 #| label: quantitative-univariate-eda
@@ -304,65 +268,20 @@ p4 <- ggplot(wildfire_clean, aes(x = remoteness)) +
   )
 ```
 
-```{r}
-#| label: quantitative-summary-stats
-#| echo: false
-#| warning: false
-
-wildfire_clean |>
-  summarise(
-    Temperature_Min = min(Temp_pre_30, na.rm = TRUE),
-    Temperature_Q1 = quantile(Temp_pre_30, 0.25, na.rm = TRUE),
-    Temperature_Median = median(Temp_pre_30, na.rm = TRUE),
-    Temperature_Mean = mean(Temp_pre_30, na.rm = TRUE),
-    Temperature_Q3 = quantile(Temp_pre_30, 0.75, na.rm = TRUE),
-    Temperature_Max = max(Temp_pre_30, na.rm = TRUE),
-    Temperature_SD = sd(Temp_pre_30, na.rm = TRUE),
-
-    Humidity_Min = min(Hum_pre_30, na.rm = TRUE),
-    Humidity_Q1 = quantile(Hum_pre_30, 0.25, na.rm = TRUE),
-    Humidity_Median = median(Hum_pre_30, na.rm = TRUE),
-    Humidity_Mean = mean(Hum_pre_30, na.rm = TRUE),
-    Humidity_Q3 = quantile(Hum_pre_30, 0.75, na.rm = TRUE),
-    Humidity_Max = max(Hum_pre_30, na.rm = TRUE),
-    Humidity_SD = sd(Hum_pre_30, na.rm = TRUE),
-
-    Wind_Min = min(Wind_pre_30, na.rm = TRUE),
-    Wind_Q1 = quantile(Wind_pre_30, 0.25, na.rm = TRUE),
-    Wind_Median = median(Wind_pre_30, na.rm = TRUE),
-    Wind_Mean = mean(Wind_pre_30, na.rm = TRUE),
-    Wind_Q3 = quantile(Wind_pre_30, 0.75, na.rm = TRUE),
-    Wind_Max = max(Wind_pre_30, na.rm = TRUE),
-    Wind_SD = sd(Wind_pre_30, na.rm = TRUE),
-
-    Remoteness_Min = min(remoteness, na.rm = TRUE),
-    Remoteness_Q1 = quantile(remoteness, 0.25, na.rm = TRUE),
-    Remoteness_Median = median(remoteness, na.rm = TRUE),
-    Remoteness_Mean = mean(remoteness, na.rm = TRUE),
-    Remoteness_Q3 = quantile(remoteness, 0.75, na.rm = TRUE),
-    Remoteness_Max = max(remoteness, na.rm = TRUE),
-    Remoteness_SD = sd(remoteness, na.rm = TRUE)
-  ) |>
-  pivot_longer(everything(),
-               names_to = c("Variable", "Statistic"),
-               names_sep = "_") |>
-  pivot_wider(names_from = Statistic, values_from = value) |>
-  kable(digits = 2) |>
-  kable_styling(full_width = FALSE, font_size = 7, latex_options = c("hold_position"))
-```
-
 In addition to examining the distributions of quantitative predictors, we also visualized the distribution of categorical variables of interest in our dataset (i.e., wildfire cause category, vegetation group, region, and precipitation 30 days prior to wildfire discovery), which can be found in the Appendix.
+
+\FloatBarrier
 
 #### Bivariate EDA
 
-As the next step in our analysis, we examined the relationship between each of our quantitative predictors and fire size to better understand their associations. In the scatterplot of burned area versus temperature (top left panel), the relationship appears very weak and slightly positive (i.e., larger fires may be slightly more likely at higher temperatures), but nonlinear, since most fires were small across the temperature range, and the largest fires (over 60 acres) tended to occur between 5°C and 20°C. The scatterplot of relative humidity versus burned area (top right panel) also shows a very weak, highly nonlinear, and slightly negative relationship, with fires of all sizes occurring across the full humidity range and the largest fires more common between 25% and 75% humidity. For wind speed (bottom left panel), the relationship appears very weak, slightly positive, and nonlinear; most fires occurred at lower wind speeds, and most larger fires (over 40 acres) were concentrated below 5 m/s, suggesting that higher wind speeds were not consistently associated with larger burned areas. In the scatterplot of remoteness versus burned area (bottom right panel), we observe a weak, slightly positive, and nonlinear relationship, with the largest fires occurring between remoteness values of 0.25 and 0.50 and relatively few large fires at very high remoteness values above 0.75. Overall, the wide vertical spread of data points around the lines of best fit for all predictors suggests that these quantitative predictors have limited predictive power for burned area when considered individually, which is expected given that wildfire size is influenced by many factors beyond the variables available in our dataset.
+As the next step in our analysis, we examined the relationship between each of our quantitative predictors and fire size to better understand their associations. In the scatterplot of burned area versus temperature (top left panel), the relationship appears very weak and slightly positive (i.e., larger fires may be slightly more likely at higher temperatures), but nonlinear, since most fires were small across the temperature range, and the largest fires (over 60 acres) tended to occur between 5 °C and 20 °C. The scatterplot of relative humidity versus burned area (top right panel) also shows a very weak, highly nonlinear, and slightly negative relationship, with fires of all sizes occurring across the full humidity range and the largest fires more common between 25% and 75% humidity. For wind speed (bottom left panel), the relationship appears very weak, slightly positive, and nonlinear; most fires occurred at lower wind speeds, and most larger fires (over 40 acres) were concentrated below 5 m/s, suggesting that higher wind speeds were not consistently associated with larger burned areas. In the scatterplot of remoteness versus burned area (bottom right panel), we observe a weak, slightly positive, and nonlinear relationship, with the largest fires occurring between remoteness values of 0.25 and 0.50 and relatively few large fires at very high remoteness values above 0.75. Overall, the wide vertical spread of data points around the lines of best fit for all predictors suggests that these quantitative predictors have limited predictive power for burned area when considered individually, which is expected given that wildfire size is influenced by many factors beyond the variables available in our dataset.
 
 ```{r}
 #| label: fire-size-bivariate
 #| echo: false
 #| warning: false
 #| fig-width: 8
-#| fig-height: 5
+#| fig-height: 4
 #| out.width: "90%"
 
 sp1 <- ggplot(wildfire_clean, aes(x = Temp_pre_30, y = fire_size)) +
@@ -525,22 +444,9 @@ fire_linear_fit <- lm(log(fire_size) ~ region + cause_category + remoteness +
 tidy(fire_linear_fit, conf.int = TRUE) |>
  kable(digits = 3, format = "latex", booktabs = TRUE) |>
   kable_styling(full_width = FALSE, font_size = 7, latex_options = c("hold_position"))
-
-glance(fire_linear_fit) |>
-  select(r.squared, adj.r.squared) |>
-  rename(
-    `R²` = r.squared,
-    `Adjusted R²` = adj.r.squared
-  ) |>
-  kable(digits = 3, format = "latex", booktabs = TRUE) |>
-  kable_styling(full_width = FALSE, font_size = 7, latex_options = c("hold_position"))
 ```
 
-Our final multiple linear regression model predicting log-transformed fire size achieved an $R^{2}$ of 0.052 and an adjusted $R^2$ of 0.050. This indicates that the model explains approximately 5.0% of the variability in log-transformed burned area among moderate-sized wildfires in the dataset. While low, this amount of explained variance is expected given the variability in wildfire behavior and the limited set of predictors available.
-
-We examined several predictors in our model and found that region, cause category, remoteness, vegetation group, wind speed 15 days prior to discovery, temperature 15 days prior to discovery, putout time, and the interaction between shrubland vegetation and precipitation were significant predictors of log-transformed fire size (p \< 0.05). In contrast, relative humidity 15 days prior (p \> 0.05), precipitation 15 days prior (p \> 0.05), and the interaction terms between grassland or tundra/barren vegetation and precipitation (p \> 0.05) were not significant; this result is consistent with our EDA findings (i.e., differences across region and vegetation type and the effect of wind speed were more apparent, while precipitation and humidity did not show strong relationships with fire size).
-
-The intercept of the model is estimated at 2.00, indicating that the expected fire size is approximately $e^{2.00} \approx 7.39$ acres when all predictors are at their reference or mean-centered values (i.e., for a wildfire in the Midwest region, caused by arson, in a forested area, under average environmental conditions — mean temperature = 13.8°C, mean relative humidity = 52.0%, mean wind speed = 2.77 m/s, mean remoteness = 0.252 — and with putout time equal to 0). The coefficient of `regionNortheast` tells us that fires in the Northeast are expected to burn $e^{-0.942} \approx 0.39$ times the acres compared to fires in the Midwest (reference level), holding all else constant. The coefficient of remoteness tells us that for each one-unit increase in remoteness (on a 0 to 1 scale), the expected fire size decreases by a factor of $e^{-0.310} \approx 0.73$, holding all else constant. The coefficient of wind speed 15 days prior tells us that for each additional meter per second, the expected fire size increases by a factor of $e^{0.032} \approx 1.03$, holding all else constant. The coefficient of the interaction between shrubland vegetation and precipitation tells us that, in shrubland environments, fires following precipitation are expected to burn $e^{-0.141} \approx 0.87$ times the acres compared to fires without prior precipitation, after controlling for other predictors.
+Our final multiple linear regression model predicting log-transformed fire size achieved an $R^{2}$ of 0.052 and an adjusted $R^2$ of 0.050 (model results in Appendix). This indicates that the model explains approximately 5.0% of the variability in log-transformed burned area among moderate-sized wildfires in the dataset. While low, this amount of explained variance is expected given the variability in wildfire behavior and the limited set of predictors available. We examined several predictors in our model and found that region, cause category, remoteness, vegetation group, wind speed 15 days prior to discovery, temperature 15 days prior to discovery, putout time, and the interaction between shrubland vegetation and precipitation were significant predictors of log-transformed fire size (p \< 0.05). In contrast, relative humidity 15 days prior (p \> 0.05), precipitation 15 days prior (p \> 0.05), and the interaction terms between grassland or tundra/barren vegetation and precipitation (p \> 0.05) were not significant; this result is consistent with our EDA findings (i.e., differences across region and vegetation type and the effect of wind speed were more apparent, while precipitation and humidity did not show strong relationships with fire size). The intercept of the model is estimated at 2.000, indicating that the expected fire size is approximately $e^{2.000} \approx 7.39$ acres when all predictors are at their reference or mean-centered values (i.e., for a wildfire in the Midwest region, caused by arson, in a forested area, under average environmental conditions — mean temperature = 13.8°C, mean relative humidity = 52.0%, mean wind speed = 2.77 m/s, mean remoteness = 0.252 — and with putout time equal to 0). Fires caused by recreational activities are expected to burn about $e^{-0.370} \approx 0.69$ times the acres compared to fires caused by arson, holding other factors constant. Fires caused by debris burning are expected to burn approximately $e^{-0.255} \approx 0.78$ times the acres compared to arson-related fires. Additionally, fires occurring in the Northeast are expected to burn about $e^{-0.942} \approx 0.39$ times the acres relative to fires in the Midwest. Other predictors, including vegetation group, environmental conditions (such as wind speed and temperature), remoteness, containment time, and vegetation–precipitation interactions, also showed statistically significant associations with fire size, although their effects were generally smaller in magnitude.
 
 #### Logistic Regression
 
@@ -559,9 +465,7 @@ tidy(fire_log_fit, conf.int = TRUE) |>
   kable_styling(full_width = FALSE, font_size = 7, latex_options = c("hold_position"))
 ```
 
-Our final logistic regression model predicting whether a wildfire burns a greater-than-typical area achieved an AUC of 0.569, indicating relatively limited ability to distinguish between smaller and larger moderate-sized fires based on the predictors included (AUC value and corresponding ROC curve are provided in the Appendix). After fitting the full model with an interaction between vegetation group and precipitation, we conducted a drop-in-deviance test to assess whether the interaction terms were jointly useful. Since the p-value for the test was 0.013, we retained the interaction between vegetation group and precipitation (full test results are provided in the Appendix); while the individual interaction terms were not significant at the 0.05 level, the combined contribution significantly improved model fit. We examined several predictors related to environmental conditions and geography and found that region, remoteness, vegetation group (grassland and shrubland), wind speed 15 days prior, and temperature 15 days prior were significant predictors of fire size classification (p \< 0.05). In contrast, relative humidity 15 days prior (p \> 0.05), precipitation 15 days prior (p \> 0.05), tundra/barren vegetation group (p \> 0.05), and the interaction terms between vegetation type and precipitation (p \> 0.05) were not significant.
-
-The intercept of the model is estimated at -0.220, indicating that the expected odds of a wildfire falling into the larger half of moderate-sized fire sizes is \$e\^{-0.220} \\approx 0.80\$ when all predictors are at their reference or mean-centered values (i.e., for a wildfire in the Midwest region, in a forested area, with no precipitation 15 days prior, and under average environmental conditions — mean temperature = 13.8°C, mean relative humidity = 52.0%, mean wind speed = 2.77 m/s, mean remoteness = 0.252). The coefficient of `regionNortheast` tells us that fires in the Northeast are expected to have $e^{-1.829} \approx 0.16$ times the odds of falling into the upper 50% compared to fires in the Midwest (reference level), holding all else constant. The coefficient of `regionSouth_West` tells us that fires in the South or West are expected to have $e^{0.182} \approx 1.20$ times the odds compared to fires in the Midwest, holding all else constant. The coefficient of remoteness tells us that for each one-unit increase in remoteness (on a 0 to 1 scale), the odds of a fire falling into the upper 50% decrease by a factor of $e^{-0.414} \approx 0.66$, holding all else constant. The coefficient of vegetation group (grassland) tells us that fires in grassland areas are expected to have $e^{0.635} \approx 1.89$ times the odds of falling into the upper 50% compared to fires in forested areas, holding all else constant. The coefficient of wind speed 15 days prior tells us that for each additional meter per second, the odds of falling into the upper 50% increase by a factor of $e^{0.036} \approx 1.04$, holding all else constant. The coefficient of temperature 15 days prior tells us that for each one-degree Celsius increase, the odds decrease by a factor of $e^{-0.005} \approx 0.995$, holding all else constant.
+Our final logistic regression model predicting whether a wildfire burns a greater-than-typical area achieved an AUC of 0.569, indicating a relatively limited ability to distinguish between smaller and larger moderate-sized fires based on the predictors included (AUC value and corresponding ROC curve are provided in the Appendix). After fitting the full model with an interaction between vegetation group and precipitation, we conducted a drop-in-deviance test to assess whether the interaction terms were jointly useful. Since the p-value for the test was 0.013, we retained the interaction between vegetation group and precipitation (full test results are provided in the Appendix); while the individual interaction terms were not significant at the 0.05 level, the combined contribution significantly improved model fit. We examined several predictors in our model and found that region, remoteness, vegetation group (grassland and shrubland), wind speed 15 days prior, and temperature 15 days prior were significant predictors of fire size classification (p \< 0.05). In contrast, relative humidity 15 days prior (p \> 0.05), precipitation 15 days prior (p \> 0.05), tundra/barren vegetation group (p \> 0.05), and the interaction terms between vegetation group and precipitation (p \> 0.05) were not significant. The intercept of the model is estimated at -0.220, which indicates that the expected odds of a wildfire falling into the larger half of moderate-sized fire sizes is approximately $e^{-0.220} \approx 0.80$ when all predictors are at their reference or mean-centered values (i.e., for a wildfire in the Midwest region, in a forested area, with no precipitation 15 days prior, and under average environmental conditions — mean temperature = 13.8°C, mean relative humidity = 52.0%, mean wind speed = 2.77 m/s, mean remoteness = 0.252). Fires in the Northeast are expected to have approximately $e^{-1.830} \approx 0.16$ times the odds of falling into the upper 50% compared to fires in the Midwest, holding all else constant. Fires occurring in shrublands are associated with approximately $e^{0.209} \approx 1.23$ times the odds compared to fires occurring in forests, controlling for other variables. Other predictors such as remoteness, wind speed, and temperature also had statistically significant effects on fire size classification, although their individual impacts were smaller in magnitude.
 
 ## Discussion and Conclusion
 
@@ -623,7 +527,7 @@ categorical_vars <- c("cause_category", "Vegetation_group", "region", "Precipita
 
 #### Exploratory Data Analysis - Potential Interaction Effects
 
-In our analysis, we were interested in a potential interaction between vegetation type and precipitation. Based on the visualization below, the distributions of burned area appearrelatively similar between precipitation and no precipitation conditions for each vegetationgroup. In forest, the median burned area is 5.0 acres for both no precipitation (mean of 11.48acres) and precipitation (mean of 11.14 acres), while in grassland, the median is 3.5 acresfor no precipitation (mean 12.26 acres) and 3.0 acres for precipitation (mean of 11.54 acres).Additionally, in shrubland, the median is 6.0 acres for no precipitation (mean of 13.52 acres)and 5.0 acres for precipitation (mean of11.31 acres), while in tundra/barren, the median is 5.0acres for both no precipitation (mean of 12.81 acres) and precipitation (mean of 11.86 acres).Even though there does not appear to be a very strong effect, this interaction would be worthexploring more formally in the modeling process to determine whether it significantly improvesmodel fit.
+In our analysis, we were interested in a potential interaction between vegetation type and precipitation. Based on the visualization below, the distributions of burned area appearrelatively similar between precipitation and no precipitation conditions for each vegetationgroup. In forest, the median burned area is 5.0 acres for both no precipitation (mean of 11.48acres) and precipitation (mean of 11.14 acres), while in grassland, the median is 3.5 acresfor no precipitation (mean 12.26 acres) and 3.0 acres for precipitation (mean of 11.54 acres).Additionally, in shrubland, the median is 6.0 acres for no precipitation (mean of 13.52 acres)and 5.0 acres for precipitation (mean of 11.31 acres), while in tundra/barren, the median is 5.0 acres for both no precipitation (mean of 12.81 acres) and precipitation (mean of 11.86 acres).Even though there does not appear to be a very strong effect, this interaction would be worthexploring more formally in the modeling process to determine whether it significantly improvesmodel fit.
 
 ```{r}
 #| label: veg-prec-int
@@ -805,29 +709,28 @@ par(mfrow = c(1, 1))
 
 #### Results - Explanatory Model
 
-The (abbreviated) estimated multiple linear regression equation predicting log-transformed fire size is shown below:
+The estimated multiple linear regression equation predicting log-transformed fire size is shown below:
 
 $$
 \begin{aligned}
-\widehat{\log(\text{Fire Size})} =\ &\ \beta_0 + \beta_1\,\text{Region} + \beta_2\,\text{Cause Category} + \beta_3\,\text{Remoteness} \\
-&+ \beta_4\,\text{Vegetation Group} + \beta_5\,\text{Wind} + \beta_6\,\text{Temperature} \\
-&+ \beta_7\,\text{Putout Time} + \beta_8\,(\text{Vegetation Group} \times \text{Precipitation})
+\widehat{\log(\text{Fire Size})} =\ &\ 2.00 - 0.94\,\cdot\,\text{Region (Northeast, South/West)} - 0.26\,\cdot\,\text{Cause Category (Debris, Infrastructure, Other/Unknown, Recreational)} - 0.31\,\cdot\,\text{Remoteness} \\
+&+ 0.19\,\cdot\,\text{Vegetation Group (Grassland, Shrubland, Tundra/Barren)} + 0.03\,\cdot\,\text{Wind Speed (15 days prior)} - 0.00\,\cdot\,\text{Temperature (15 days prior)} \\
+&+ 0.01\,\cdot\,\text{Containment Time} - 0.14\,\cdot\,(\text{Vegetation Group} \times \text{Precipitation (15 days prior)})
 \end{aligned}
 $$
 
-$$
-\begin{aligned}
-\beta_0\ &: 2.00 \quad (\text{Intercept}) \\
-\beta_1\ &: \text{Region effects (e.g., Northeast: } -0.94\text{, South and West: } 0.08\text{)} \\
-\beta_2\ &: \text{Cause effects (e.g., Debris Burning: } -0.26\text{, Recreational: } -0.37\text{)} \\
-\beta_3\ &: -0.31 \quad (\text{Remoteness}) \\
-\beta_4\ &: \text{Vegetation effects (e.g., Grassland: } 0.19\text{, Shrubland: } 0.07\text{)} \\
-\beta_5\ &: 0.03 \quad (\text{Wind 15 days prior}) \\
-\beta_6\ &: -0.00 \quad (\text{Temperature 15 days prior}) \\
-\beta_7\ &: 0.01 \quad (\text{Containment time}) \\
-\beta_8\ &: -0.14 \quad (\text{Interaction: Shrubland} \times \text{Precipitation})
-\end{aligned}
-$$
+Additionally, $R^2$ and adjusted $R^2$ values for the fitted model are displayed below:
+
+```{r}
+glance(fire_linear_fit) |>
+  select(r.squared, adj.r.squared) |>
+  rename(
+    `R²` = r.squared,
+    `Adjusted R²` = adj.r.squared
+  ) |>
+  kable(digits = 3, format = "latex", booktabs = TRUE) |>
+  kable_styling(full_width = FALSE, font_size = 7, latex_options = c("hold_position"))
+```
 
 #### Results - Predictive Model
 
@@ -835,9 +738,11 @@ The estimated logistic regression equation predicting the log-odds that a wildfi
 
 $$
 \begin{aligned}
-\log\left(\frac{\hat{\pi}}{1 - \hat{\pi}}\right) =\ &\ \beta_0 + \beta_1\,\text{Region} + \beta_2\,\text{Remoteness} + \beta_3\,\text{Vegetation Group} \\
-&+ \beta_4\,\text{Precipitation} + \beta_5\,\text{Wind} + \beta_6\,\text{Temperature} + \beta_7\,\text{Humidity} \\
-&+ \beta_8\,(\text{Vegetation Group} \times \text{Precipitation})
+\log\left(\frac{\hat{\pi}}{1-\hat{\pi}}\right) =\ &\ -0.22 - 1.83\,\cdot\,\text{Northeast region} + 0.18\,\cdot\,\text{South/West region} \\
+&- 0.41\,\cdot\,\text{Remoteness} + 0.64\,\cdot\,\text{Grassland vegetation} + 0.21\,\cdot\,\text{Shrubland vegetation} + 0.09\,\cdot\,\text{Tundra/Barren vegetation} \\
+&+ 0.03\,\cdot\,\text{Precipitation (15 days prior)} + 0.04\,\cdot\,\text{Wind speed (15 days prior)} - 0.00\,\cdot\,\text{Temperature (15 days prior)} \\
+&- 0.00\,\cdot\,\text{Relative humidity (15 days prior)} - 0.64\,\cdot\,(\text{Grassland vegetation} \times \text{Precipitation}) \\
+&- 0.19\,\cdot\,(\text{Shrubland vegetation} \times \text{Precipitation}) + 0.01\,\cdot\,(\text{Tundra/Barren vegetation} \times \text{Precipitation})
 \end{aligned}
 $$
 
