@@ -27,11 +27,11 @@ Wildfires are destructive natural disasters that occur regularly across the Unit
 
 [^1]: United States Environmental Protection Agency, "Climate Change Indicators: Wildfires," 2023, https://www.epa.gov/climate-indicators/climate-change-indicators-wildfires.
 
-The dataset used in this analysis is an integrated dataset consisting of over 55,000 wildfire records from the United States between 1992 and 2015, compiled from the Fire Program Analysis system. In addition to wildfire-specific attributes recorded in this database, the dataset was supplemented with additional information from the Forest Service Research Data Archive, NOAA Integrated Surface Hourly Database, vegetation and land cover data from Meiyappan and Jain’s global land-use dataset, and geographic proximity data from SimpleMap’s World Cities Database. As part of our analysis, we used a subset of these variables, including fire size (measured in acres) as the response variable; cause of fire (categorized as missing/undefined, arson, debris burning, miscellaneous, campfire, fireworks, children, lightning, equipment use, smoking, railroad, structure, or powerline); temperature (°C), wind speed (meters per second), relative humidity (%), and precipitation (millimeters) recorded 30 days prior to the fire; vegetation classification based on land cover (with categories Open Shrubland, Polar Desert/Rock/Ice, Secondary Tropical Evergreen Broadleaf Forest, Temperate Evergreen Needleleaf Forest, C3 Grassland/Steppe, Desert, and Water/Rivers); and remoteness (a unitless value between 0 and 1 representing the scaled distance from the nearest urban center).
+The dataset used in this analysis is an integrated dataset consisting of over 55,000 wildfire records from the United States between 1992 and 2015, compiled from the Fire Program Analysis system. In addition to wildfire-specific attributes recorded in this database, the dataset was supplemented with additional information from the Forest Service Research Data Archive, NOAA Integrated Surface Hourly Database, vegetation and land cover data from Meiyappan and Jain’s global land-use dataset, and geographic proximity data from SimpleMap’s World Cities Database. As part of our analysis, we used a subset of these variables, including fire size (measured in acres) as the response variable; cause of fire (categorized as missing/undefined, arson, debris burning, miscellaneous, campfire, fireworks, children, lightning, equipment use, smoking, railroad, structure, or powerline); temperature (°C), wind speed (meters per second), relative humidity (%), and precipitation (millimeters) recorded 30 days prior to the fire; containment time (measured as the number of days from discovery to containment); vegetation classification based on land cover (with categories Open Shrubland, Polar Desert/Rock/Ice, Secondary Tropical Evergreen Broadleaf Forest, Temperate Evergreen Needleleaf Forest, C3 Grassland/Steppe, Desert, and Water/Rivers); and remoteness (a unitless value between 0 and 1 representing the scaled distance from the nearest urban center).
 
 #### Hypotheses
 
-We hypothesize that (1) environmental conditions (e.g., temperature, humidity, wind, precipitation), geographic characteristics (e.g., remoteness, region), and vegetation type are associated with the likelihood that a wildfire burns a greater-than-typical area (with hotter, drier, and windier conditions, greater remoteness, and more flammable vegetation expected to increase the likelihood of larger fires), and (2) that both pre-discovery factors (environmental conditions, geographic characteristics, and vegetation type) and fire cause help explain variability in burned area, with human-related causes, hotter, drier, and windier conditions, greater remoteness, and flammable vegetation expected to be associated with larger burned areas.
+We hypothesize that (1) environmental conditions (e.g., temperature, humidity, wind, precipitation), geographic characteristics (e.g., remoteness, region), and vegetation type influence the likelihood that a wildfire burns a greater-than-typical area (with hotter, drier, windier conditions, greater remoteness, and more flammable vegetation expected to increase this likelihood), and (2) that conditions before and after discovery (including containment time and fire cause) explain variability in burned area, with human-related causes and adverse environmental and geographic factors associated with larger fires.
 
 ## Exploratory Data Analysis
 
@@ -122,7 +122,7 @@ write_csv(wildfire_clean, "data/wildfire_clean.csv")
 
 #### Univariate EDA
 
-As part of our EDA, we first examined the distribution of the response variable, fire size, to better understand its scale and variability. As mentioned previously, we focused on the middle 50% of wildfires by acres burned, which represent moderate-sized fires that are more likely to be responsive to early containment efforts. Based on the histogram of burned area (left panel), the distribution of moderate-sized wildfires appears right-skewed and unimodal. There is a clear peak at 3,978 observations corresponding to wildfires that burned less than 2 acres. Within this subset, the mean burned area is 11.84 acres, and the median is 5 acres. The middle 50% of burned areas falls between 2.5 acres (first quartile) and 14.7 acres (third quartile), with minimum and maximum values of 1.5 and 80 acres, respectively. The standard deviation is 15.62 acres, indicating substantial variability within this range. Many wildfires burned more than 30 acres, extending beyond the typical range and representing moderate outliers. For the binary fire size outcome (right panel), 54.2% of wildfires fall into the lower 50% (0) and 45.8% fall into the upper 50% (1), which reflects a roughly balanced distribution.
+As part of our EDA, we first examined the distribution of the response variable, fire size, to better understand its scale and variability. As mentioned previously, we focused on the middle 50% of wildfires by acres burned, which represent moderate-sized fires that are more likely to be responsive to early containment efforts. Based on the histogram of burned area (left panel), the distribution of moderate-sized wildfires appears right-skewed and unimodal. There is a clear peak at 3,978 observations corresponding to wildfires that burned less than 2 acres. Within this subset, the mean burned area is 11.84 acres, and the median is 5 acres. The middle 50% of burned areas falls between 2.5 acres (first quartile) and 14.7 acres (third quartile), with minimum and maximum values of 1.5 and 80 acres, respectively. The standard deviation is 15.62 acres, indicating substantial variability within this range. (Summary statistics for fire size are provided in the Appendix.) Many wildfires burned more than 30 acres, extending beyond the typical range and representing moderate outliers. For the binary fire size outcome (right panel), 54.2% of wildfires fall into the lower 50% (0) and 45.8% fall into the upper 50% (1), which reflects a roughly balanced distribution.
 
 ```{r}
 #| label: fire-size-dist
@@ -334,7 +334,7 @@ sp4 <- ggplot(wildfire_clean, aes(x = remoteness, y = fire_size)) +
 
 ```
 
-As the next step in our analysis, we examined the relationship between each of our quantitative predictors and fire size to better understand their associations. In the scatterplot of burned area versus temperature (top left panel), the relationship appears very weak and slightly positive (i.e., larger fires may be slightly more likely at higher temperatures), but nonlinear, since most fires were small across the temperature range, and the largest fires (over 60 acres) tended to occur between 5 °C and 20 °C. The scatterplot of relative humidity versus burned area (top right panel) also shows a very weak, highly nonlinear, and slightly negative relationship, with fires of all sizes occurring across the full humidity range and the largest fires more common between 25% and 75% humidity. For wind speed (bottom left panel), the relationship appears very weak, slightly positive, and nonlinear; most fires occurred at lower wind speeds, and most larger fires (over 40 acres) were concentrated below 5 m/s, suggesting that higher wind speeds were not consistently associated with larger burned areas. In the scatterplot of remoteness versus burned area (bottom right panel), we observe a weak, slightly positive, and nonlinear relationship, with the largest fires occurring between remoteness values of 0.25 and 0.50 and relatively few large fires at very high remoteness values above 0.75. Overall, the wide vertical spread of data points around the lines of best fit for all predictors suggests that these quantitative predictors have limited predictive power for burned area when considered individually, which is expected given that wildfire size is influenced by many factors beyond the variables available in our dataset.
+As the next step in our analysis, we examined the relationship between each of our quantitative predictors and fire size to better understand their associations. In the scatterplot of burned area versus temperature (top left panel), the relationship appears very weak and slightly positive (i.e., larger fires may be slightly more likely at higher temperatures), but nonlinear, since most fires were small across the temperature range, and the largest fires (over 60 acres) tended to occur between 5 °C and 20 °C. The scatterplot of relative humidity versus burned area (top right panel) also shows a very weak, highly nonlinear, and slightly negative relationship, with fires of all sizes occurring across the full humidity range and the largest fires more common between 25% and 75% humidity. For wind speed (bottom left panel), the relationship appears very weak, slightly positive, and nonlinear; most fires occurred at lower wind speeds, and most larger fires (over 40 acres) were concentrated below 5 m/s, suggesting that higher wind speeds were not consistently associated with larger burned areas. In the scatterplot of remoteness versus burned area (bottom right panel), we observe a weak, slightly positive, and nonlinear relationship, with the largest fires occurring between remoteness values of 0.25 and 0.50 and relatively few large fires at very high remoteness values above 0.75. Overall, the wide vertical spread of data points around the lines of best fit for all predictors suggests that these quantitative predictors have limited predictive power for burned area when considered individually, which is expected given that wildfire size is influenced by many factors beyond the variables available in our dataset. (Summary statistics and containment time EDA are provided in the Appendix.)
 
 ```{r}
 #| label: categorical-bivariate-dist
@@ -471,6 +471,124 @@ Our analysis had some limitations. Although the dataset included a large number 
 
 ## Appendix
 
+#### Exploratory Data Analysis - Univariate EDA for Response Variable
+
+A table of summary statistics for our response variable, fire size, and the binary fire size outcome (mid-50% classification) is included below.
+
+```{r}
+#| label: fire-size-summary-stats
+#| echo: false
+#| warning: false
+
+table1 <- wildfire_clean |>
+  summarise(
+    Count = n(),
+    Min = min(fire_size, na.rm = TRUE),
+    Q1 = quantile(fire_size, 0.25, na.rm = TRUE),
+    Median = median(fire_size, na.rm = TRUE),
+    Mean = mean(fire_size, na.rm = TRUE),
+    Q3 = quantile(fire_size, 0.75, na.rm = TRUE),
+    Max = max(fire_size, na.rm = TRUE),
+    SD = sd(fire_size, na.rm = TRUE)
+  )
+
+table2 <- wildfire_clean |>
+  group_by(mid50_hi) |>
+  summarise(
+    Count = n(),
+    Proportion = n() / nrow(wildfire_clean)
+  ) |>
+  mutate(Proportion = scales::percent(Proportion)) |>
+  rename(
+    "Fire Size Group" = mid50_hi,
+    "Count" = Count,
+    "Proportion" = Proportion
+  )
+
+kable(table1, digits = 2, format = "latex", booktabs = TRUE) |>
+  kable_styling(full_width = FALSE, font_size = 7)
+
+kable(table2, digits = 2, format = "latex", booktabs = TRUE) |>
+  kable_styling(full_width = FALSE, font_size = 7)
+```
+
+#### Exploratory Data Analysis - Univariate EDA for Containment Time
+
+We used putout time (containment time) as a predictor in our multiple linear regression model. As we can see from the plot below, the distribution of containment time is highly right-skewed, with most fires contained on the same day they were discovered (median = 0 days, mean = 0.98 days) and a small number of fires with much longer containment times (maximum = 261 days).
+
+```{r}
+#| fig-width: 8
+
+ggplot(wildfire_clean, aes(x = as.factor(putout_time_num))) +
+  geom_bar(fill = "cadetblue4", color = "white", alpha = 0.8, width = 0.8) +  
+  labs(
+    title = "Distribution of Containment Time",
+    subtitle = "Containment time (in days)",
+    x = "Containment Time (days)",
+    y = "Count"
+  ) +
+  scale_x_discrete(guide = guide_axis(angle = 90, check.overlap = TRUE)) +  # rotate AND avoid label collisions
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 10),
+    plot.subtitle = element_text(size = 8),
+    axis.title.x = element_text(size = 8),
+    axis.title.y = element_text(size = 8),
+    axis.text = element_text(size = 7)
+  )
+```
+
+#### Exploratory Data Analysis - Bivariate EDA for Quantitative Predictors
+
+A table of summary statistics for the quantitative predictors considered during modeling (temperature, relative humidity, wind speed, and remoteness) is included below.
+
+```{r}
+#| label: quantitative-summary-stats
+#| echo: false
+#| warning: false
+
+wildfire_clean |>
+  summarise(
+    Temperature_Min = min(Temp_pre_30, na.rm = TRUE),
+    Temperature_Q1 = quantile(Temp_pre_30, 0.25, na.rm = TRUE),
+    Temperature_Median = median(Temp_pre_30, na.rm = TRUE),
+    Temperature_Mean = mean(Temp_pre_30, na.rm = TRUE),
+    Temperature_Q3 = quantile(Temp_pre_30, 0.75, na.rm = TRUE),
+    Temperature_Max = max(Temp_pre_30, na.rm = TRUE),
+    Temperature_SD = sd(Temp_pre_30, na.rm = TRUE),
+
+    Humidity_Min = min(Hum_pre_30, na.rm = TRUE),
+    Humidity_Q1 = quantile(Hum_pre_30, 0.25, na.rm = TRUE),
+    Humidity_Median = median(Hum_pre_30, na.rm = TRUE),
+    Humidity_Mean = mean(Hum_pre_30, na.rm = TRUE),
+    Humidity_Q3 = quantile(Hum_pre_30, 0.75, na.rm = TRUE),
+    Humidity_Max = max(Hum_pre_30, na.rm = TRUE),
+    Humidity_SD = sd(Hum_pre_30, na.rm = TRUE),
+
+    Wind_Min = min(Wind_pre_30, na.rm = TRUE),
+    Wind_Q1 = quantile(Wind_pre_30, 0.25, na.rm = TRUE),
+    Wind_Median = median(Wind_pre_30, na.rm = TRUE),
+    Wind_Mean = mean(Wind_pre_30, na.rm = TRUE),
+    Wind_Q3 = quantile(Wind_pre_30, 0.75, na.rm = TRUE),
+    Wind_Max = max(Wind_pre_30, na.rm = TRUE),
+    Wind_SD = sd(Wind_pre_30, na.rm = TRUE),
+
+    Remoteness_Min = min(remoteness, na.rm = TRUE),
+    Remoteness_Q1 = quantile(remoteness, 0.25, na.rm = TRUE),
+    Remoteness_Median = median(remoteness, na.rm = TRUE),
+    Remoteness_Mean = mean(remoteness, na.rm = TRUE),
+    Remoteness_Q3 = quantile(remoteness, 0.75, na.rm = TRUE),
+    Remoteness_Max = max(remoteness, na.rm = TRUE),
+    Remoteness_SD = sd(remoteness, na.rm = TRUE)
+  ) |>
+  pivot_longer(everything(),
+               names_to = c("Variable", "Statistic"),
+               names_sep = "_") |>
+  pivot_wider(names_from = Statistic, values_from = value) |>
+  kable(digits = 2) |>
+  kable_styling(full_width = FALSE, font_size = 7, latex_options = c("hold_position"))
+```
+
 #### Exploratory Data Analysis - Bivariate EDA for Categorical Predictors
 
 Looking more closely at vegetation group, we can see that most fires occurred in forested areas (5181 observations or 48.6%), followed by shrubland (2711 observations or 25.4%) and tundra or barren areas (2590 observations or 24.3%), with relatively few fires in grassland environments (189 observations or 1.77%). Examining wildfire cause categories, we found that a large portion of fires were attributed to human-related causes rather than natural causes. Debris burning accounted for the highest proportion (2821 observations or 26.4%), followed by arson (2399 observations or 22.5%) and other or unknown causes (2228 observations or 20.9%). Natural causes made up a smaller proportion (1535 observations or 14.4%), followed by recreational causes (853 observations or 8.0%) and infrastructure-related causes (835 observations or 7.82%). Finally, we examined the regional distribution of fires. Most fires in our dataset occurred in the South (6090 observations or 57.1%), followed by the West (2801 observations or 26.2%), Midwest (1228 observations or 11.5%), and Northeast (550 observations or 5.15%). Only two fires (2 observations or less than 0.01%) were categorized as occurring in the "Other" region classification.
@@ -550,7 +668,7 @@ ggplot(wildfire_clean, aes(x = Vegetation_group, y = fire_size, color = Precipit
 
 #### Methods - Explanatory Model
 
-A scatterplot of residuals vs. fitted values for our explanatory model is shown below. Given that the initial model we fit had a clear violation of constant variance (an increase in the variability of residuals as fitted values increased), we applied a variance-stabilizing (i.e., logarithmic) transformation to the response variable. We observed an improvement in the spread of residuals (more uniform spread across the range of fitted values) as well as a slight improvement in model fit (an increase in adjusted $R^2$) after applying this transformation. Because there was also a clear pattern in the residuals (i.e., they were not randomly scattered around $residuals = 0$), we examined scatterplots of fitted values versus each of the predictors and observed no clear nonlinear trends. As a result, we did not transform our predictors. We also did not observe any influential points ($D_i > 0.5$) in our data, so no observations were removed. Lastly, we observed two distinct groupings in the scatterplot of residuals vs. fitted values (one group with fitted values less than 1.5 and one group with fitted values generally above 1.5). We found that a large portion of this separation could be explained by region, so we fit separate linear regression models for different regional groups. However, this approach did not lead to a meaningful increase in explanatory power, so we retained a single model for all observations. From our work, we deem that constant variance and linearity are sufficiently satisfied.
+After fitting our initial linear regression model, we conducted a full set of diagnostics to assess linearity, normality, constant variance, and independence. A scatterplot of residuals vs. fitted values for our explanatory model is shown below. Given that the initial model we fit had a clear violation of constant variance (an increase in the variability of residuals as fitted values increased), we applied a variance-stabilizing (i.e., logarithmic) transformation to the response variable. We observed an improvement in the spread of residuals (more uniform spread across the range of fitted values) as well as a slight improvement in model fit (an increase in adjusted $R^2$) after applying this transformation. Because there was also a clear pattern in the residuals (i.e., they were not randomly scattered around $residuals = 0$), we examined scatterplots of fitted values versus each of the predictors and observed no clear nonlinear trends. As a result, we did not transform our predictors. We also did not observe any influential points ($D_i > 0.5$) in our data, so no observations were removed. Lastly, we observed two distinct groupings in the scatterplot of residuals vs. fitted values (one group with fitted values less than 1.5 and one group with fitted values generally above 1.5). We found that a large portion of this separation could be explained by region, so we fit separate linear regression models for different regional groups. However, this approach did not lead to a meaningful increase in explanatory power, so we retained a single model for all observations. From our work, we deem that constant variance and linearity are sufficiently satisfied.
 
 ```{r}
 #| label: residuals-fitted-vals-plot
