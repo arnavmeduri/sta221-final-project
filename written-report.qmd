@@ -1,7 +1,7 @@
 ---
 title: "Analyzing Factors Associated with Area Burned by Wildfires in the United States"
 author: "Info Innovators: Kevin Mao, Arnav Meduri, Ben Trokenheim, Ricardo Urena"
-date: "March 20, 2025"
+date: "April 28, 2025"
 format:
   pdf:
     keep-tex: true
@@ -343,7 +343,7 @@ As the next step in our analysis, we examined the relationship between each of o
 #| echo: false
 #| warning: false
 #| fig-width: 8
-#| fig-height: 5
+#| fig-height: 4
 
 wildfire_clean <- wildfire_clean |>
   mutate(
