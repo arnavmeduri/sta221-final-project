@@ -417,8 +417,6 @@ To guide variable selection for the predictive model, we fit a full model includ
 
 #### Multiple Linear Regression
 
-The output of our final multiple linear regression model is displayed below:
-
 ```{r}
 #| results: asis
 exp_fire_fit <- lm(fire_size ~ region + cause_category + remoteness + Vegetation_group + 
@@ -449,8 +447,6 @@ tidy(fire_linear_fit, conf.int = TRUE) |>
 Our final multiple linear regression model predicting log-transformed fire size achieved an $R^{2}$ of 0.052 and an adjusted $R^2$ of 0.050 (model results in Appendix). This indicates that the model explains approximately 5.0% of the variability in log-transformed burned area among moderate-sized wildfires in the dataset. While low, this amount of explained variance is expected given the variability in wildfire behavior and the limited set of predictors available. We examined several predictors in our model and found that region, cause category, remoteness, vegetation group, wind speed 15 days prior to discovery, temperature 15 days prior to discovery, putout time, and the interaction between shrubland vegetation and precipitation were significant predictors of log-transformed fire size (p \< 0.05). In contrast, relative humidity 15 days prior (p \> 0.05), precipitation 15 days prior (p \> 0.05), and the interaction terms between grassland or tundra/barren vegetation and precipitation (p \> 0.05) were not significant; this result is consistent with our EDA findings (i.e., differences across region and vegetation type and the effect of wind speed were more apparent, while precipitation and humidity did not show strong relationships with fire size). The intercept of the model is estimated at 2.000, indicating that the expected fire size is approximately $e^{2.000} \approx 7.39$ acres when all predictors are at their reference or mean-centered values (i.e., for a wildfire in the Midwest region, caused by arson, in a forested area, under average environmental conditions — mean temperature = 13.8°C, mean relative humidity = 52.0%, mean wind speed = 2.77 m/s, mean remoteness = 0.252 — and with putout time equal to 0). Fires caused by recreational activities are expected to burn about $e^{-0.370} \approx 0.69$ times the acres compared to fires caused by arson, holding other factors constant. Fires caused by debris burning are expected to burn approximately $e^{-0.255} \approx 0.78$ times the acres compared to arson-related fires. Additionally, fires occurring in the Northeast are expected to burn about $e^{-0.942} \approx 0.39$ times the acres relative to fires in the Midwest. Other predictors, including vegetation group, environmental conditions (such as wind speed and temperature), remoteness, containment time, and vegetation–precipitation interactions, also showed statistically significant associations with fire size, although their effects were generally smaller in magnitude.
 
 #### Logistic Regression
-
-The output of our final logistic regression model is displayed below:
 
 ```{r}
 #| label: logistic-model
