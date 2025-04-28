@@ -534,17 +534,11 @@ ggplot(wildfire_clean, aes(x = Vegetation_group, y = fire_size, color = Precipit
 
 ## Methodology
 
-The main goal of our analysis was to examine how various wildfire-related factors are related to burned area, and how these factors can be used to predict fire size. Since these represent two distinct research questions, we chose to fit two separate models: a linear regression model using all variables of interest, including those only available after a fire is contained, to explain variability in burned area (i.e., an explanatory model), and a logistic regression model using only variables that are available at or before fire discovery to guide response efforts (i.e., a predictive model). It is important to note that our response variable, fire size, is continuous and therefore suitable for linear regression. However, logistic regression requires a binary response variable. To address this, we created a binary response variable based on whether a fire exceeded the median fire size, classifying fires greater than the median as 1 and those less than or equal to the median as 0. (In this setup, the model estimates the likelihood that a wildfire falls into the upper half of moderate-sized fires based on available environmental factors.)
+The main goal of our analysis was to examine how various wildfire-related factors are related to burned area, and how these factors can be used to predict fire size. Since these represent two distinct research questions, we chose to fit two separate models: a linear regression model using all variables of interest (including those only available after a fire is contained) to explain variability in burned area (i.e., an explanatory model), and a logistic regression model using only variables that are available at or before fire discovery to guide response efforts to predict whether a wildfire burns a greater-than-typical area (i.e., a predictive model). It is important to note that our response variable, fire size, is continuous and therefore suitable for linear regression. However, logistic regression requires a binary response variable. (In this setup, the model estimates the likelihood that a wildfire falls into the upper half of moderate-sized fires based on available environmental factors.)
 
 ### Explanatory Modeling
 
-To guide predictor selection for the explanatory model, we used a forward selection approach based on adjusted $R^2$ (which accounts for model fit while penalizing unnecessary predictors). Ultimately, we included all predictors of interest in our model, since each contributed to an increase in adjusted $R^2$ in our model. Specifically, we arrived at a linear regression model predicting fire size from region, temperature, cause category, containment time, wind speed, precipitation, relative humidity (measured 15 days before fire discovery), remoteness, vegetation group, and an interaction between vegetation group and precipitation. We decided to mean-center the quantitative predictors in our model to improve interpretability of the coefficients.
-
-After fitting this initial model, we conducted diagnostics to evaluate whether key assumptions (i.e., linearity, normality, constant variance, and independence) were satisfied. We found that the normality, linearity, and independence conditions were reasonably satisfied, but the constant variance condition was violated, and there was a potential violation in the linearity condition. To address constant variance, we applied a variance-stabilizing (logarithmic) transformation to the fire size variable. For linearity, we examined residuals against predictors to more closely assess if there were any nonlinear relationships between predictors and fire size. However, we found no concerning evidence of non-linearity, so we did not transform our predictors.
-
-Additionally, when examining the distribution of residuals versus fitted values for this initial model, we observed a clustering of observations into two groups: one with fitted values ≤5, and another with fitted values between 5 and 20. Through further analysis, we realized that this clustering was partially explained by differences in region. (As we saw in our exploratory data analysis, fires in the Northeast generally corresponded to smaller burned areas compared to fires in other regions, which likely contributed to the small separation observed in the residuals versus fitted values plot.) To address this, we explored whether fitting two separate models (one for fires occurring in the Northeast and one for fires occurring in other regions) would improve explanatory power, but we ultimately decided to proceed with a single model including all regions because the improvement in fit was minimal (and for the sake of consistency in interpretation).
-
-We also checked for influential points based on Cook’s Distance ($D_i > 0.5$), and found no such observations in our dataset that could substantially affect regression coefficient estimates. Lastly, when examining the correlations between predictors, we found evidence of collinearity between certain region levels (specifically, the similarity between the Southern and Western regions). To address this, we combined these two regions into a single level, which helped reduce collinearity without compromising overall explainability of the model.
+To guide predictor selection for the explanatory model, we used a forward selection approach based on adjusted $R^2$ (which accounts for model fit while penalizing unnecessary predictors). Ultimately, we included all predictors of interest in our model, since each contributed to an increase in adjusted $R^2$ in our model. Specifically, we arrived at a linear regression model predicting fire size from region, temperature, cause category, containment time, wind speed, precipitation, relative humidity (measured 15 days before fire discovery), remoteness, vegetation group, and an interaction between vegetation group and precipitation. We decided to mean-center the quantitative predictors in our model to improve interpretability of the coefficients. After fitting this initial model, we conducted diagnostics to evaluate whether key assumptions (i.e., linearity, normality, constant variance, and independence) were satisfied. We found that the normality, linearity, and independence conditions were reasonably satisfied, but the constant variance condition was violated, and there was a potential violation in the linearity condition. To address constant variance, we applied a variance-stabilizing (logarithmic) transformation to the fire size variable. For linearity, we examined residuals against predictors to more closely assess if there were any nonlinear relationships between predictors and fire size. However, we found no concerning evidence of non-linearity, so we did not transform our predictors. Additionally, when examining the distribution of residuals versus fitted values for this initial model, we observed a clustering of observations into two groups (one with fitted values ≤5, and another with fitted values between 5 and 20), which could partly be explained by differences in region. (As we saw in our exploratory data analysis, fires in the Northeast generally corresponded to smaller burned areas compared to fires in other regions, which likely contributed to the small separation observed in the residuals versus fitted values plot.) To address this, we explored whether fitting two separate models (one for fires occurring in the Northeast and one for fires occurring in other regions) would improve explanatory power, but we ultimately decided to proceed with a single model including all regions because the improvement in fit was minimal (and for the sake of consistency in interpretation). We also checked for influential points based on Cook’s Distance ($D_i > 0.5$), and found no such observations in our dataset that could substantially affect regression coefficient estimates. Lastly, when examining the correlations between predictors, we found evidence of collinearity between certain region levels (specifically, the similarity between the Southern and Western regions). To address this, we combined these two regions into a single level, which helped reduce collinearity without compromising overall explainability of the model.
 
 ```{r}
 #| label: linear-model
@@ -568,9 +562,18 @@ fire_linear_fit <- lm(log(fire_size) ~ region + cause_category + remoteness +
                                Vegetation_group * Prec_pre_15_cent + Wind_pre_15_cent + Temp_pre_15_cent +
                                  Hum_pre_15_cent + putout_time,
                                data = wildfire_clean)
+```
 
-glance(fire_linear_fit)
-sqrt(mean(resid(fire_linear_fit)^2))
+### Predictive Modeling
+
+To guide variable selection for the predictive model, we fit a full model including all of the variables we were interested in. This approach made sense because our dataset contained a limited number of predictors corresponding to information that would already be available prior to fire discovery, so it was practical to include all relevant variables rather than selecting a smaller subset. Our initial logistic regression model predicted the likelihood that a wildfire burns a greater-than-typical area based on temperature, humidity, wind speed, precipitation, vegetation type, remoteness, and region. After fitting this model, we assessed whether the key assumptions for logistic regression (i.e., linearity, randomness, independence) were satisfied. The wildfire records in our dataset can reasonably be treated as independent since, in our analysis of the independence condition for linear regression, we observed no spatial correlations between residuals and geographic location. The randomness assumption of logistic regression is satisfied because the original wildfire data were compiled from a large national database covering a broad range of fires across the United States between 1992 and 2015, and we can reasonably assume that our dataset is representative of the broader population of wildfires in the United States. Lastly, we found that the linearity condition was reasonably satisfied, as empirical logit plots for the quantitative predictors in our model did not display strong deviations from linearity, and the assumption of linearity in the log-odds appeared to be met for these predictors.
+
+```{r}
+#| label: logistic-model
+
+fire_log_fit <- glm(mid50_hi ~ region + remoteness + Vegetation_group * Prec_pre_15 + 
+                   Wind_pre_15 + Temp_pre_15 + Hum_pre_15, data = wildfire_clean,
+                   family = "binomial")
 ```
 
 ## Results
@@ -717,16 +720,6 @@ ggplot(fire_linear_fit_aug, aes(x = remoteness, y = .resid)) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
   labs(x = "Remoteness", y = "Residuals", title = "Residuals vs. Remoteness") +
   theme_minimal()
-```
-
-```{r}
-
-fire_log_fit <- glm(mid50_hi ~ region + remoteness + Vegetation_group * Prec_pre_15 + 
-                   Wind_pre_15 + Temp_pre_15 + Hum_pre_15, data = wildfire_clean,
-                   family = "binomial")
-
-tidy(fire_log_fit, conf.int = TRUE) |>
-  kable(digits = 3)
 ```
 
 The odds of a large fire for those in the South West region are expected to be 1.20 (exp{0.182}) times the odds for those in the baseline region, holding all other variables constant. The odds of a large fire are expected to be 0.96 times the odds for each 0.1-unit increase in remoteness (or 10% increase on the 0–1 scale), holding all other variables constant.
