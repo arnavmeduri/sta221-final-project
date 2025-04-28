@@ -566,6 +566,7 @@ fire_linear_fit <- lm(log(fire_size) ~ region + cause_category + remoteness +
                                data = wildfire_clean)
 
 glance(fire_linear_fit)
+sqrt(mean(resid(fire_linear_fit)^2))
 ```
 
 ### Predictive Modeling
@@ -584,9 +585,23 @@ tidy(fire_log_fit, conf.int = TRUE) |>
 ## Results
 
 ```{r}
-tidy(fire_linear_fit) |>
+tidy(fire_linear_fit, conf.int = TRUE) |>
   kable(digits = 3)
 ```
+
+To explain variation in burned area, we fit a multiple linear regression to log-transformed fire size using the subset of predictors defined in our exploratory analysis. Our $R^2 = 7.31\%$ meaning our regression explains 7.3% of the variance, and $RMSE = e^{1.04} = 2.829$ acres. Below are some interpretations of significant variables.
+
+$\beta_{Northeast} = -0.975$ –\> Compared to fires in the Midwest, fires in the Northeast burn$e^{-0.975} = 0.377$ times smaller, holding all else constant. The p-value is 0 and the confidence interval does not contain 0, indicating that this coefficient is significant.
+
+$\beta_{Remoteness} = -0.614$ –\> For every one unit increase in remoteness, fire size is expected to decrease by a factor of $e^{-0.614} = 0.541$ holding all else constant. The p-value is 0 and the confidence interval does not contain 0, indicating that this coefficient is significant. While this may seem counterintuitive, remoteness of a fire may make it more difficult for firefighters to contain it.
+
+$\beta_{Vegetation\_groupShrubland} = 0.072$ –\> Compared to fire sizes for those in forests, fires in shrubland areas burn $e^{0.072} = 1.075$ times larger, holding all else constant. The p-value is 0 and the confidence interval does not contain 0, indicating that this coefficient is significant.
+
+Out of all weather-related variables, wind appears to have the strongest impact on fire size. $\beta_{Wind\_pre\_15\_cent} = 0.034$ –\> For every m/s increase in wind, fire sizes are multiplied by a factor of $e^{0,034} = 1.035$ holding all else constant. The p-value is 0 and the confidence interval does not contain 0, indicating that this coefficient is significant.
+
+For all cause-related variables, their coefficients are less than 1 which imply that, holding all other variables constant, every listed cause produces smaller fires than the baseline case of Arson.
+
+The modest R², $Adj, R^2$, and $RMSE$ is unsurprising. Wildfire growth depends on highly local, time-varying factors (hourly wind gusts, slope, live-fuel moisture, crew tactics) that our coarse daily-average, national-scale data cannot capture. While our model does hold some explanatory power, confirming that wind, fuel type, region, remoteness, and cause are significant determinants of wildfire size, much of the variance remains unaccounted for.
 
 ## Discussion
 
