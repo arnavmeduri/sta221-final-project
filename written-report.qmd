@@ -22,7 +22,7 @@ The dataset used in this analysis is an integrated dataset consisting of over 55
 
 #### Hypotheses
 
-We hypothesize that (1) environmental conditions (e.g., temperature, humidity, wind, precipitation), geographic characteristics (e.g., remoteness, region), and vegetation type are associated with the likelihood that a wildfire burns a greater-than-typical area, with hotter, drier, and windier conditions, greater remoteness, and more flammable vegetation expected to increase the likelihood of larger fires, and (2) that both pre-discovery factors (environmental conditions, geographic characteristics, and vegetation type) and fire cause help explain variability in burned area, with human-related causes, hotter, drier, and windier conditions, greater remoteness, and flammable vegetation expected to be associated with larger burned areas.
+We hypothesize that (1) environmental conditions (e.g., temperature, humidity, wind, precipitation), geographic characteristics (e.g., remoteness, region), and vegetation type are associated with the likelihood that a wildfire burns a greater-than-typical area (with hotter, drier, and windier conditions, greater remoteness, and more flammable vegetation expected to increase the likelihood of larger fires), and (2) that both pre-discovery factors (environmental conditions, geographic characteristics, and vegetation type) and fire cause help explain variability in burned area, with human-related causes, hotter, drier, and windier conditions, greater remoteness, and flammable vegetation expected to be associated with larger burned areas.
 
 ## Exploratory Data Analysis
 
