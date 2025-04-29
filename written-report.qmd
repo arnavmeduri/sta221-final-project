@@ -409,7 +409,7 @@ To guide predictor selection for the explanatory model, we used a forward select
 
 #### Logistic Regression
 
-To guide variable selection for the predictive model, we fit a full model including all variables of interest. This approach was appropriate because our dataset contained a limited number of predictors corresponding to information available prior to fire discovery, making it practical to include all relevant variables rather than selecting a smaller subset. Specifically, our initial logistic regression model predicted the likelihood that a wildfire would burn a greater-than-typical area based on temperature, humidity, wind speed, precipitation, vegetation type, the interaction between vegetation type and precipitation, remoteness, and region. After fitting the model, we determined that the key assumptions for logistic regression (linearity, randomness, and independence) were satisfied. A detailed assessment of model diagnostics (empirical logit plots, assessment of logistic regression conditions) can be found in the Appendix.
+To guide variable selection for the predictive model, we fit a full model including all variables of interest. This approach was appropriate because our dataset contained a limited number of predictors corresponding to information available prior to fire discovery, making it practical to include all relevant variables rather than selecting a smaller subset. Specifically, our initial logistic regression model predicted the likelihood that a wildfire would burn a greater-than-typical area based on temperature, humidity, wind speed, precipitation, vegetation type, the interaction between vegetation type and precipitation, remoteness, and region. After fitting the model, we determined that the key assumptions for logistic regression (linearity, randomness, and independence) were satisfied. A detailed assessment of model diagnostics (i.e., assessment of logistic regression conditions) can be found in the Appendix.
 
 ## Results
 
@@ -584,7 +584,7 @@ combined_plot
 categorical_vars <- c("cause_category", "Vegetation_group", "region", "Precipitation")
 ```
 
-#### Exploratory Data Analysis - Bivariate EDA for Quantitative Predictors
+#### Exploratory Data Analysis - Univariate EDA for Quantitative Predictors
 
 A table of summary statistics for the quantitative predictors considered during modeling (temperature, relative humidity, wind speed, and remoteness) is included below.
 
